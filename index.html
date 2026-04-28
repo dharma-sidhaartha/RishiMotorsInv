@@ -134,7 +134,7 @@ textarea{min-height:70px;resize:vertical}
 .inv-co h1{font-family:'Playfair Display',serif;font-size:26pt;margin:0 0 5px;color:var(--text)}
 .inv-co p{white-space:pre-line;font-size:9.5pt;line-height:1.5;color:#777;margin:0}
 .inv-right{text-align:right;min-width:170px}
-.inv-title{font-family:'Playfair Display',serif;font-size:30pt;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px}
+.inv-title{font-family:'Playfair Display',serif;font-size:25pt;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px}
 .inv-line{font-size:9.5pt;color:#888;margin-top:4px}
 .inv-line b{color:var(--text)}
 
@@ -172,6 +172,98 @@ textarea{min-height:70px;resize:vertical}
   .buttons{width:100%}
   .buttons button{flex:1;text-align:center}
 }
+
+/* ===== Color Pickers ===== */
+.color-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.color-field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.color-field input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* ===== Invoice Custom Colors ===== */
+:root {
+  --company-name-color: #1A1410;
+  --company-details-color: #666666;
+  --invoice-title-color: #1A1410;
+  --invoice-main-text: #1A1A1A;
+  --invoice-muted-text: #777777;
+}
+
+.inv-co h1 {
+  color: var(--company-name-color) !important;
+}
+
+.inv-co p {
+  color: var(--company-details-color) !important;
+}
+
+.inv-title {
+  color: var(--invoice-title-color) !important;
+}
+
+.inv-card .val,
+.inv-tbl td,
+.inv-right .line b,
+.trow.grand {
+  color: var(--invoice-main-text) !important;
+}
+
+.inv-line,
+.inv-card .sub,
+.trow,
+.inv-footer,
+.inv-tbl th {
+  color: var(--invoice-muted-text) !important;
+}
+
+.inv-sec,
+.inv-card .lbl {
+  color: var(--accent) !important;
+}
+
+.invoice::before {
+  background: linear-gradient(
+    90deg,
+    #7A5C1F,
+    var(--accent),
+    var(--gold),
+    var(--accent),
+    #7A5C1F
+  ) !important;
+}
+
+@media(max-width:680px) {
+  .color-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+#pGrand {
+  font-family: 'Times New Roman', sans-serif !important;
+  font-size: 18pt;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
 @media print{
   body{background:white;padding:0;margin:0}
   .topbar,.editor,.sync-badge,.prevlabel,.buttons{display:none!important}
@@ -207,6 +299,41 @@ textarea{min-height:70px;resize:vertical}
       <span id="linkDisplay" style="font-size:12px;color:var(--muted);word-break:break-all;"></span>
     </div>
     <div class="body">
+	
+	
+<div class="sec-title">Colors</div>
+
+<div class="color-grid">
+  <div class="color-field">
+    <label>Accent / Gold</label>
+    <input id="cAccent" type="color" value="#B8913A">
+  </div>
+
+  <div class="color-field">
+    <label>Company Name</label>
+    <input id="cCompanyName" type="color" value="#1A1410">
+  </div>
+
+  <div class="color-field">
+    <label>Company Address</label>
+    <input id="cCompanyDetails" type="color" value="#666666">
+  </div>
+
+  <div class="color-field">
+    <label>Invoice Title</label>
+    <input id="cInvoiceTitle" type="color" value="#1A1410">
+  </div>
+
+  <div class="color-field">
+    <label>Main Text</label>
+    <input id="cMainText" type="color" value="#1A1A1A">
+  </div>
+
+  <div class="color-field">
+    <label>Muted Text</label>
+    <input id="cMutedText" type="color" value="#777777">
+  </div>
+</div>
 
       <div class="sec-title">Customer & Vehicle</div>
       <div class="grid2">
@@ -268,8 +395,8 @@ textarea{min-height:70px;resize:vertical}
             </div>
             <div class="inv-right">
               <div class="inv-title">Invoice</div>
-              <div class="inv-line">No. <b id="pInv"></b></div>
-              <div class="inv-line">Date <b id="pDate"></b></div>
+              <div class="inv-line">No : <b id="pInv"></b></div>
+              <div class="inv-line">Date : <b id="pDate"></b></div>
             </div>
           </div>
 
@@ -287,7 +414,7 @@ textarea{min-height:70px;resize:vertical}
                   <div class="val" id="pCar">—</div>
                 </div>
                 <div>
-                  <div class="sub">Odometer</div>
+                  <div class="sub">Odometer(Km)</div>
                   <div class="val" id="pKm">—</div>
                 </div>
               </div>
@@ -300,7 +427,7 @@ textarea{min-height:70px;resize:vertical}
             <tbody id="pParts"></tbody>
           </table>
 
-          <div class="inv-sec">Labor & Other</div>
+          <div class="inv-sec">Labor Charges & Other</div>
           <table class="inv-tbl">
             <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
             <tbody id="pLabor"></tbody>
@@ -349,7 +476,71 @@ const CO = {
    GLOBALS
    ════════════════════════════════ */
 const $ = id => document.getElementById(id);
-const FIELDS = ["fName","fPhone","fCar","fKm","fDate","fInv","fNotes"];
+const INVOICE_FIELDS = ["fName","fPhone","fCar","fKm","fDate","fInv","fNotes"];
+
+const COLOR_FIELDS = [
+  "cAccent",
+  "cCompanyName",
+  "cCompanyDetails",
+  "cInvoiceTitle",
+  "cMainText",
+  "cMutedText"
+];
+
+const COLOR_STORAGE_KEY = "autoInvoiceSavedColors";
+
+const DEFAULT_COLORS = {
+  cAccent: "#B8913A",
+  cCompanyName: "#1A1410",
+  cCompanyDetails: "#666666",
+  cInvoiceTitle: "#1A1410",
+  cMainText: "#1A1A1A",
+  cMutedText: "#777777",
+  cGrandFont: "'Playfair Display', serif"
+  
+};
+
+function setDefaultColors() {
+  COLOR_FIELDS.forEach(function(id) {
+    if ($(id) && DEFAULT_COLORS[id]) {
+      $(id).value = DEFAULT_COLORS[id];
+    }
+  });
+}
+
+function saveColorDefaults() {
+  const data = {};
+
+  COLOR_FIELDS.forEach(function(id) {
+    if ($(id)) {
+      data[id] = $(id).value;
+    }
+  });
+
+  localStorage.setItem(COLOR_STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadColorDefaults() {
+  setDefaultColors();
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLOR_STORAGE_KEY));
+
+    if (saved) {
+      COLOR_FIELDS.forEach(function(id) {
+        if ($(id) && saved[id]) {
+          $(id).value = saved[id];
+        }
+      });
+    }
+  } catch (e) {
+    console.log("No saved colors found");
+  }
+
+  applyColors();
+}
+
+const FIELDS = INVOICE_FIELDS.concat(COLOR_FIELDS);
 const CUR = "₹";
 
 let docRef = null;
@@ -409,7 +600,7 @@ function fmtDate(d) {
 }
 function makeInvNo() {
   const d = new Date();
-  return "INV-" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0") + "-" + String(d.getHours()).padStart(2,"0") + String(d.getMinutes()).padStart(2,"0");
+  return "INV-" ;
 }
 
 /* ════════════════════════════════
@@ -474,7 +665,38 @@ function calcTable(listId, tbodyId) {
   return total;
 }
 
+
+function lightenColor(hex, percent) {
+  hex = hex.replace("#", "");
+
+  const num = parseInt(hex, 16);
+  let r = (num >> 16) + percent;
+  let g = ((num >> 8) & 0x00FF) + percent;
+  let b = (num & 0x0000FF) + percent;
+
+  r = Math.max(Math.min(255, r), 0);
+  g = Math.max(Math.min(255, g), 0);
+  b = Math.max(Math.min(255, b), 0);
+
+  return "#" + (b | (g << 8) | (r << 16)).toString(16).padStart(6, "0");
+}
+
+function applyColors() {
+  const accent = $("cAccent").value || "#B8913A";
+
+  document.documentElement.style.setProperty("--accent", accent);
+  document.documentElement.style.setProperty("--gold", lightenColor(accent, 35));
+
+  document.documentElement.style.setProperty("--company-name-color", $("cCompanyName").value || "#C70505");
+  document.documentElement.style.setProperty("--company-details-color", $("cCompanyDetails").value || "#666666");
+  document.documentElement.style.setProperty("--invoice-title-color", $("cInvoiceTitle").value || "#1A1410");
+  document.documentElement.style.setProperty("--invoice-main-text", $("cMainText").value || "#1A1A1A");
+  document.documentElement.style.setProperty("--invoice-muted-text", $("cMutedText").value || "#777777");
+}
+
+
 function updatePreview() {
+applyColors();
   $("coName").textContent = CO.name;
   $("coDetails").textContent = CO.details;
   $("pName").textContent = $("fName").value || "—";
