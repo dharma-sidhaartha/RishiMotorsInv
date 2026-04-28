@@ -321,12 +321,11 @@ textarea{min-height:70px;resize:vertical}
 
 </div>
 
-<script>
-/* ════════════════════════════════
+<script>/* ════════════════════════════════
    FIREBASE CONFIG — REPLACE THIS
    ════════════════════════════════ */
 const firebaseConfig = {
-apiKey: "AIzaSyCH5lWduhcIp4OJZv5ROx56nBnbydoqvnE",
+ apiKey: "AIzaSyCH5lWduhcIp4OJZv5ROx56nBnbydoqvnE",
   authDomain: "rishimotors-86908.firebaseapp.com",
   projectId: "rishimotors-86908",
   storageBucket: "rishimotors-86908.firebasestorage.app",
@@ -356,7 +355,7 @@ const CUR = "₹";
 let docRef = null;
 let isRemote = false;
 let saveTimer = null;
-let currentID = null;
+let unsubscribe = null;
 
 /* ════════════════════════════════
    SYNC UI
@@ -364,136 +363,68 @@ let currentID = null;
 function setSync(state, msg) {
   const badge = $("syncBadge");
   badge.className = "sync-badge " + state;
-  const dot = $("syncDot");
-  const msgt = $("syncMsg");
-
-  if (state === "ok") {
-    dot.textContent = "✓";
-    msgt.textContent = msg || "Synced";
-  } else if (state === "saving") {
-    dot.textContent = "●";
-    msgt.textContent = msg || "Saving...";
-  } else if (state === "error") {
-    dot.textContent = "!";
-    msgt.textContent = msg || "Error";
-  } else {
-    dot.textContent = "●";
-    msgt.textContent = msg || "Offline";
-  }
+  $("syncDot").textContent = state === "ok" ? "✓" : state === "saving" ? "●" : "!";
+  $("syncMsg").textContent = msg || (state === "ok" ? "Synced" : state === "saving" ? "Saving..." : "Error");
 }
 
 /* ════════════════════════════════
    GET OR CREATE INVOICE ID
    ════════════════════════════════ */
 function getInvoiceID() {
-  // Try to get ID from URL first
   const params = new URLSearchParams(window.location.search);
   let id = params.get("id");
+  if (id) return id;
 
-  if (id) {
-    return id; // Use existing ID from URL
-  }
-
-  // Generate new ID
   id = "inv_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-
-  // Add ID to URL
   params.set("id", id);
-  const newURL = window.location.pathname + "?" + params.toString();
-  window.history.replaceState({}, "", newURL);
-
+  window.history.replaceState({}, "", window.location.pathname + "?" + params.toString());
   return id;
 }
 
 /* ════════════════════════════════
-   COPY LINK
+   COPY LINK & NEW INVOICE
    ════════════════════════════════ */
 function copyLink() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    setSync("ok", "Link copied!");
-    setTimeout(() => setSync("ok"), 2000);
-  }).catch(() => {
-    alert("Copy this link:\n" + url);
-  });
+  navigator.clipboard.writeText(window.location.href)
+    .then(() => { setSync("ok", "Link copied!"); setTimeout(() => setSync("ok"), 2000); })
+    .catch(() => alert("Copy this link:\n" + window.location.href));
 }
 
-/* ════════════════════════════════
-   NEW INVOICE
-   ════════════════════════════════ */
 function newInvoice() {
   if (!confirm("Start a new invoice? This creates a new link.")) return;
-
   const id = "inv_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  window.location.href = window.location.pathname + "?id=" + id;
+  // location.replace() prevents browser cache from restoring old form data
+  window.location.replace(window.location.pathname + "?id=" + id);
 }
 
 /* ════════════════════════════════
-   MONEY FORMAT
+   FORMATTING
    ════════════════════════════════ */
 function money(v) {
-  return CUR + Number(v || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  return CUR + Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
-/* ════════════════════════════════
-   DATE FORMAT
-   ════════════════════════════════ */
 function fmtDate(d) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-IN", {
-    day: "2-digit", month: "short", year: "numeric"
-  });
+  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
-
-/* ════════════════════════════════
-   INVOICE NUMBER
-   ════════════════════════════════ */
 function makeInvNo() {
   const d = new Date();
-  return "INV-" +
-    d.getFullYear() +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    String(d.getDate()).padStart(2, "0") +
-    "-" +
-    String(d.getHours()).padStart(2, "0") +
-    String(d.getMinutes()).padStart(2, "0");
+  return "INV-" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0") + "-" + String(d.getHours()).padStart(2,"0") + String(d.getMinutes()).padStart(2,"0");
 }
 
 /* ════════════════════════════════
-   ADD ITEM ROW
+   ITEM ROWS
    ════════════════════════════════ */
 function addRow(type, data) {
   const row = document.createElement("div");
   row.className = "irow";
 
-  const inp1 = document.createElement("input");
-  inp1.className = "idesc";
-  inp1.placeholder = "Description";
+  const inp1 = document.createElement("input"); inp1.className = "idesc"; inp1.placeholder = "Description"; inp1.autocomplete = "off";
+  const inp2 = document.createElement("input"); inp2.className = "iqty"; inp2.type = "number"; inp2.min = "0"; inp2.value = "1"; inp2.autocomplete = "off";
+  const inp3 = document.createElement("input"); inp3.className = "irate"; inp3.type = "number"; inp3.min = "0"; inp3.step = "0.01"; inp3.value = "0"; inp3.autocomplete = "off";
+  const del = document.createElement("button"); del.className = "rdel"; del.textContent = "×";
 
-  const inp2 = document.createElement("input");
-  inp2.className = "iqty";
-  inp2.type = "number";
-  inp2.min = "0";
-  inp2.value = "1";
-
-  const inp3 = document.createElement("input");
-  inp3.className = "irate";
-  inp3.type = "number";
-  inp3.min = "0";
-  inp3.step = "0.01";
-  inp3.value = "0";
-
-  const del = document.createElement("button");
-  del.className = "rdel";
-  del.textContent = "×";
-  del.onclick = function() {
-    row.remove();
-    updatePreview();
-    debounceSave();
-  };
+  del.onclick = () => { row.remove(); updatePreview(); debounceSave(); };
 
   if (data) {
     inp1.value = data.d || "";
@@ -501,86 +432,51 @@ function addRow(type, data) {
     inp3.value = data.r || 0;
   }
 
-  [inp1, inp2, inp3].forEach(function(inp) {
-    inp.addEventListener("input", function() {
-      updatePreview();
-      debounceSave();
-    });
-  });
+  [inp1, inp2, inp3].forEach(inp => inp.addEventListener("input", () => { updatePreview(); debounceSave(); }));
 
-  row.appendChild(inp1);
-  row.appendChild(inp2);
-  row.appendChild(inp3);
-  row.appendChild(del);
-
+  row.append(inp1, inp2, inp3, del);
   (type === "parts" ? $("partsList") : $("laborList")).appendChild(row);
 }
 
-/* ════════════════════════════════
-   READ ALL ITEM ROWS
-   ════════════════════════════════ */
 function readRows(id) {
-  var rows = document.querySelectorAll("#" + id + " .irow");
-  var arr = [];
-  for (var i = 0; i < rows.length; i++) {
-    var r = rows[i];
-    arr.push({
-      d: r.querySelector(".idesc").value,
-      q: r.querySelector(".iqty").value,
-      r: r.querySelector(".irate").value
-    });
-  }
-  return arr;
+  return Array.from(document.querySelectorAll("#" + id + " .irow")).map(r => ({
+    d: r.querySelector(".idesc").value,
+    q: r.querySelector(".iqty").value,
+    r: r.querySelector(".irate").value
+  }));
 }
 
 /* ════════════════════════════════
-   CALCULATE TABLE
+   CALC & PREVIEW
    ════════════════════════════════ */
 function calcTable(listId, tbodyId) {
-  var rows = document.querySelectorAll("#" + listId + " .irow");
-  var tbody = $(tbodyId);
+  const rows = document.querySelectorAll("#" + listId + " .irow");
+  const tbody = $(tbodyId);
   tbody.innerHTML = "";
+  let total = 0, has = false;
 
-  var total = 0;
-  var hasItems = false;
-
-  for (var i = 0; i < rows.length; i++) {
-    var r = rows[i];
-    var desc = r.querySelector(".idesc").value.trim();
-    var qty = parseFloat(r.querySelector(".iqty").value) || 0;
-    var rate = parseFloat(r.querySelector(".irate").value) || 0;
-
-    if (!desc && qty === 0 && rate === 0) continue;
-
-    hasItems = true;
-    var amt = qty * rate;
+  rows.forEach(r => {
+    const desc = r.querySelector(".idesc").value.trim();
+    const qty = parseFloat(r.querySelector(".iqty").value) || 0;
+    const rate = parseFloat(r.querySelector(".irate").value) || 0;
+    if (!desc && qty === 0 && rate === 0) return;
+    has = true;
+    const amt = qty * rate;
     total += amt;
-
-    var tr = document.createElement("tr");
-    tr.innerHTML =
-      "<td>" + (desc || "—") + "</td>" +
-      "<td>" + qty + "</td>" +
-      "<td>" + money(rate) + "</td>" +
-      "<td>" + money(amt) + "</td>";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${desc||"—"}</td><td>${qty}</td><td>${money(rate)}</td><td>${money(amt)}</td>`;
     tbody.appendChild(tr);
-  }
+  });
 
-  if (!hasItems) {
-    var tr = document.createElement("tr");
-    tr.innerHTML = '<td colspan="4" style="text-align:center;color:#BBB;font-style:italic">No items</td>';
-    tbody.appendChild(tr);
+  if (!has) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#BBB;font-style:italic">No items</td></tr>';
   }
-
   return total;
 }
 
-/* ════════════════════════════════
-   UPDATE PREVIEW
-   ════════════════════════════════ */
 function updatePreview() {
   $("coName").textContent = CO.name;
   $("coDetails").textContent = CO.details;
-
   $("pName").textContent = $("fName").value || "—";
   $("pPhone").textContent = $("fPhone").value || "—";
   $("pCar").textContent = $("fCar").value || "—";
@@ -588,24 +484,20 @@ function updatePreview() {
   $("pInv").textContent = $("fInv").value || "—";
   $("pDate").textContent = fmtDate($("fDate").value);
 
-  var pt = calcTable("partsList", "pParts");
-  var lt = calcTable("laborList", "pLabor");
-
+  const pt = calcTable("partsList", "pParts");
+  const lt = calcTable("laborList", "pLabor");
   $("pPartT").textContent = money(pt);
   $("pLabT").textContent = money(lt);
   $("pGrand").textContent = money(pt + lt);
-
   $("pNotes").textContent = $("fNotes").value || CO.note;
 }
 
 /* ════════════════════════════════
-   SAVE TO FIREBASE
+   FIREBASE SAVE / LOAD
    ════════════════════════════════ */
 function getFormData() {
-  var data = {};
-  for (var i = 0; i < FIELDS.length; i++) {
-    data[FIELDS[i]] = $(FIELDS[i]).value;
-  }
+  const data = {};
+  FIELDS.forEach(id => data[id] = $(id).value);
   data.parts = readRows("partsList");
   data.labor = readRows("laborList");
   data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -616,13 +508,8 @@ function saveToFirebase() {
   if (!docRef || isRemote) return;
   setSync("saving");
   docRef.set(getFormData(), { merge: true })
-    .then(function() {
-      setSync("ok");
-    })
-    .catch(function(err) {
-      console.error("Save error:", err);
-      setSync("error");
-    });
+    .then(() => setSync("ok"))
+    .catch(err => { console.error(err); setSync("error"); });
 }
 
 function debounceSave() {
@@ -630,94 +517,58 @@ function debounceSave() {
   saveTimer = setTimeout(saveToFirebase, 600);
 }
 
-/* ════════════════════════════════
-   LOAD FROM FIREBASE
-   ════════════════════════════════ */
 function loadFormData(data) {
-  for (var i = 0; i < FIELDS.length; i++) {
-    var id = FIELDS[i];
-    if (data[id] !== undefined) {
-      $(id).value = data[id];
-    }
-  }
-
+  FIELDS.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; });
   $("partsList").innerHTML = "";
   $("laborList").innerHTML = "";
-
-  var parts = data.parts || [];
-  var labor = data.labor || [];
-
-  if (parts.length === 0) {
-    addRow("parts");
-  } else {
-    for (var j = 0; j < parts.length; j++) {
-      addRow("parts", parts[j]);
-    }
-  }
-
-  if (labor.length === 0) {
-    addRow("labor");
-  } else {
-    for (var k = 0; k < labor.length; k++) {
-      addRow("labor", labor[k]);
-    }
-  }
+  (data.parts || []).forEach(p => addRow("parts", p));
+  (data.labor || []).forEach(l => addRow("labor", l));
+  if (!data.parts?.length) addRow("parts");
+  if (!data.labor?.length) addRow("labor");
 }
 
 /* ════════════════════════════════
-   START FIRESTORE SYNC
+   START SYNC (FIXED RACE CONDITION)
    ════════════════════════════════ */
 function startFirestoreSync() {
-  currentID = getInvoiceID();
+  const id = getInvoiceID();
+  $("linkDisplay").textContent = "ID: " + id;
 
-  // Show current link in editor
-  $("linkDisplay").textContent = "ID: " + currentID;
+  // Detach old listener if exists
+  if (unsubscribe) unsubscribe();
 
-  docRef = db.collection("sharedInvoices").doc(currentID);
-
+  docRef = db.collection("sharedInvoices").doc(id);
   setSync("saving", "Loading...");
 
-  // Real-time listener
-  docRef.onSnapshot(
-    function(snap) {
-      if (snap.exists) {
-        isRemote = true;
-        loadFormData(snap.data());
-        updatePreview();
-        isRemote = false;
-        setSync("ok");
-      } else {
-        // First time - save default data
-        saveToFirebase();
-      }
-    },
-    function(err) {
-      console.error("Firestore error:", err);
-      setSync("error", "Connection error");
+  unsubscribe = docRef.onSnapshot(snap => {
+    if (snap.exists) {
+      isRemote = true;
+      loadFormData(snap.data());
+      updatePreview();
+      isRemote = false;
+      setSync("ok");
+    } else {
+      // New invoice: save clean default data
+      saveToFirebase();
     }
-  );
+  }, err => {
+    console.error("Firestore error:", err);
+    setSync("error", "Connection error");
+  });
 }
 
 /* ════════════════════════════════
-   FIT PREVIEW TO SCREEN
+   FIT PREVIEW
    ════════════════════════════════ */
 function fitPreview() {
-  var scaler = $("scaler");
-  var wrap = scaler.parentElement;
-  var inv = $("invoiceEl");
-
-  scaler.style.transform = "none";
-  scaler.style.width = "auto";
-  scaler.style.height = "auto";
-
-  var available = wrap.clientWidth;
-  var fullWidth = inv.offsetWidth;
-
-  if (available < fullWidth) {
-    var scale = available / fullWidth;
-    scaler.style.transform = "scale(" + scale + ")";
-    scaler.style.width = fullWidth + "px";
-    scaler.style.height = (inv.offsetHeight * scale) + "px";
+  const s = $("scaler"), w = s.parentElement, inv = $("invoiceEl");
+  s.style.transform = "none"; s.style.width = "auto"; s.style.height = "auto";
+  const avail = w.clientWidth, full = inv.offsetWidth;
+  if (avail < full) {
+    const scale = avail / full;
+    s.style.transform = `scale(${scale})`;
+    s.style.width = full + "px";
+    s.style.height = (inv.offsetHeight * scale) + "px";
   }
 }
 
@@ -726,62 +577,44 @@ function fitPreview() {
    ════════════════════════════════ */
 function clearAll() {
   if (!confirm("Clear all fields?")) return;
-
-  for (var i = 0; i < FIELDS.length; i++) {
-    $(FIELDS[i]).value = "";
-  }
-
+  FIELDS.forEach(id => $(id).value = "");
   $("fDate").value = new Date().toISOString().slice(0, 10);
   $("fInv").value = makeInvNo();
-
   $("partsList").innerHTML = "";
   $("laborList").innerHTML = "";
-  addRow("parts");
-  addRow("labor");
-
+  addRow("parts"); addRow("labor");
   updatePreview();
   saveToFirebase();
 }
 
 /* ════════════════════════════════
-   INIT
+   INIT (FIXED ORDER + BFCACHE BUSTER)
    ════════════════════════════════ */
 function init() {
-  // Default values
+  // 1. Force clean state (fixes bfcache restoring old data)
+  FIELDS.forEach(id => $(id).value = "");
   $("fDate").value = new Date().toISOString().slice(0, 10);
   $("fInv").value = makeInvNo();
-
-  // Add initial rows
-  addRow("parts");
-  addRow("labor");
-
-  // Bind all inputs
-  for (var i = 0; i < FIELDS.length; i++) {
-    var id = FIELDS[i];
-    $(id).addEventListener("input", function() {
-      updatePreview();
-      debounceSave();
-    });
-  }
-
-  // Initial render
+  $("partsList").innerHTML = "";
+  $("laborList").innerHTML = "";
+  addRow("parts"); addRow("labor");
   updatePreview();
+
+  // 2. Bind inputs
+  FIELDS.forEach(id => $(id).addEventListener("input", () => { updatePreview(); debounceSave(); }));
+
+  // 3. Preview scaling
   fitPreview();
-
-  // Watch for window resize
   window.addEventListener("resize", fitPreview);
-  setTimeout(fitPreview, 500);
+  setTimeout(fitPreview, 300);
+  new MutationObserver(fitPreview).observe($("invoiceEl"), { childList: true, subtree: true, characterData: true });
 
-  // Watch invoice content for height changes
-  new MutationObserver(fitPreview).observe($("invoiceEl"), {
-    childList: true,
-    subtree: true,
-    characterData: true
-  });
-
-  // Start Firestore sync
+  // 4. Start sync AFTER form is clean
   startFirestoreSync();
 }
+
+// Prevent back/forward cache from restoring stale form data
+window.addEventListener("pageshow", e => { if (e.persisted) window.location.reload(); });
 
 init();
 </script>
