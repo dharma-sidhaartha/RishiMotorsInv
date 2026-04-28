@@ -1,279 +1,669 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Auto Invoice</title>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#F5F0E8;
-  --editor:#FFFFFF;
-  --text:#1A1410;
-  --text2:#5C5347;
-  --muted:#8A7F72;
-  --border:#E0D8CC;
-  --accent:#B8913A;
-  --gold:#D4AF5A;
-  --top-line:linear-gradient(90deg,#7A5C1F,#B8913A,#D4C48A,#B8913A,#7A5C1F);
+:root {
+  /* Fixed Theme Colours */
+  --bg: #f5f0e8;
+  --panel: #ffffff;
+  --text: #1a1410;
+  --muted: #8a7f72;
+  --soft: #5c5347;
+  --border: #e0d8cc;
+  --accent: #b8913a;
+  --gold: #d4af5a;
+  --input-bg: #fdfbf7;
+
+  /* Invoice Colours */
+  --company-name-color: #991C00;
+  --company-details-color: #0000D1;
+  --invoice-title-color: #1a1410;
+  --invoice-main-text: #1a1a1a;
+  --invoice-muted-text: #777777;
+
+  --top-line: linear-gradient(
+    90deg,
+    #7a5c1f,
+    #b8913a,
+    #d4c48a,
+    #b8913a,
+    #7a5c1f
+  );
 }
 
-*{box-sizing:border-box;margin:0}
-body{
-  margin:0;
-  font-family:'Inter',sans-serif;
-  background:var(--bg);
-  color:var(--text);
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.topbar{
-  padding:14px 24px;
-  display:flex;justify-content:space-between;align-items:center;
-  background:white;
-  border-bottom:1px solid var(--border);
-  flex-wrap:wrap;gap:10px;
-}
-.topbar h1{font-family:'Playfair Display',serif;font-size:20px;margin:0}
-.buttons{display:flex;gap:8px}
-button{
-  padding:9px 16px;border-radius:100px;border:1px solid var(--border);
-  background:white;color:var(--text);font-weight:600;cursor:pointer;
-}
-button:hover{border-color:var(--accent);color:var(--accent)}
-button.primary{background:var(--text);color:white;border:none}
-
-.sync-badge{
-  position:fixed;top:72px;right:18px;z-index:60;
-  padding:7px 14px;border-radius:100px;font-size:12px;font-weight:700;
-  color:white;background:#888;
-  display:flex;align-items:center;gap:6px;
-}
-.sync-badge.ok{background:#2D6A4F}
-.sync-badge.saving{background:#B8913A}
-.sync-badge.error{background:#C0392B}
-
-.wrap{
-  display:grid;
-  grid-template-columns:400px 1fr;
-  gap:28px;
-  padding:28px;
-  max-width:1480px;
-  margin:auto;
-  align-items:start;
+html {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-.editor{
-  position:sticky;top:80px;
-  background:var(--editor);
-  border:1px solid var(--border);
-  border-radius:16px;
-  box-shadow:0 20px 50px rgba(0,0,0,.06);
-}
-.editor-head{
-  padding:18px 22px;
-  border-bottom:1px solid var(--border);
-}
-.editor-head h2{font-family:'Playfair Display',serif;font-size:20px}
-.editor-head span{font-size:12px;color:var(--muted)}
-
-.body{padding:18px 22px}
-
-.sec-title{
-  font-size:11px;font-weight:800;text-transform:uppercase;
-  letter-spacing:1.5px;color:var(--accent);
-  margin:20px 0 10px;
-  display:flex;align-items:center;gap:10px;
-}
-.sec-title::before,.sec-title::after{content:"";flex:1;height:1px;background:var(--border)}
-
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);display:block;margin-bottom:4px}
-
-input,textarea{
-  width:100%;padding:11px 12px;
-  border:1px solid var(--border);border-radius:10px;
-  font-size:14px;font-family:'Inter',sans-serif;
-  background:#FDFBF7;color:var(--text);outline:none;
-}
-input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(184,145,58,.1)}
-textarea{min-height:70px;resize:vertical}
-
-.irow{display:grid;grid-template-columns:1fr 65px 90px 36px;gap:8px;margin-bottom:8px;align-items:center}
-.rdel{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:none;font-size:16px;cursor:pointer;color:var(--muted)}
-.rdel:hover{background:var(--accent);border-color:var(--accent);color:white}
-
-.addbtn{width:100%;padding:10px;margin-top:6px;border:1px dashed var(--border);border-radius:10px;background:none;color:var(--accent);font-weight:700;cursor:pointer}
-
-.eactions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
-
-/* Preview */
-.prevcol{min-width:0}
-.prevlabel{display:flex;justify-content:space-between;margin:0 0 12px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
-.prevframe{width:100%;overflow:hidden;display:flex;justify-content:center}
-.prevscale{transform-origin:top center}
-
-/* Invoice A4 */
-.invoice{
-  width:210mm;min-height:297mm;
-  background:white;
-  padding:18mm;
-  position:relative;
-  box-shadow:0 30px 80px rgba(0,0,0,.12);
-}
-.invoice::before{
-  content:"";position:absolute;top:0;left:0;right:0;height:5px;
-  background:var(--top-line);
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(184,145,58,0.08), transparent 35%),
+    radial-gradient(circle at 90% 90%, rgba(184,145,58,0.06), transparent 35%),
+    repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 45px,
+      rgba(184,145,58,0.018) 45px,
+      rgba(184,145,58,0.018) 46px
+    ),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
-.inv-head{display:flex;justify-content:space-between;gap:28px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--border)}
-.inv-co h1{font-family:'Playfair Display',serif;font-size:26pt;margin:0 0 5px;color:var(--text)}
-.inv-co p{white-space:pre-line;font-size:9.5pt;line-height:1.5;color:#777;margin:0}
-.inv-right{text-align:right;min-width:170px}
-.inv-title{font-family:'Playfair Display',serif;font-size:25pt;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px}
-.inv-line{font-size:9.5pt;color:#888;margin-top:4px}
-.inv-line b{color:var(--text)}
-
-.inv-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-.inv-card{padding:13px;border-radius:8px;background:#F8F7F4;border:1px solid #EDEAE4}
-.inv-card .lbl{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:5px}
-.inv-card .val{font-size:11pt;font-weight:600}
-.inv-card .sub{font-size:9.5pt;color:#777;margin-top:2px}
-.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-.inv-sec{margin:22px 0 8px;font-family:'Playfair Display',serif;font-size:13pt;color:var(--accent);display:flex;align-items:center;gap:10px}
-.inv-sec::after{content:"";flex:1;height:1px;background:#E0E0E0}
-
-.inv-tbl{width:100%;border-collapse:collapse}
-.inv-tbl th{padding:8px 0;font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;text-align:left;border-bottom:2px solid var(--text)}
-.inv-tbl td{padding:7px 0;font-size:10pt;border-bottom:1px solid #EDEAE4}
-.inv-tbl th:nth-child(n+2),.inv-tbl td:nth-child(n+2){text-align:right}
-
-.inv-totals{width:260px;max-width:100%;margin-left:auto;margin-top:14px}
-.trow{display:flex;justify-content:space-between;padding:5px 0;font-size:10pt;color:#666}
-.trow.grand{border-top:2px solid var(--text);margin-top:8px;padding-top:10px;font-family:'Playfair Display',serif;font-size:16pt;font-weight:700}
-
-.inv-footer{margin-top:28px;padding-top:12px;border-top:1px solid #E0E0E0;text-align:center;font-size:9pt;color:#999;font-style:italic}
-
-@media(max-width:1100px){.wrap{grid-template-columns:1fr}.editor{position:relative;top:0}}
-@media(max-width:680px){
-  .wrap{padding:16px;gap:18px}
-  .grid2{grid-template-columns:1fr}
-  .irow{grid-template-columns:1fr 60px 82px 32px}
-  .inv-cards{grid-template-columns:1fr}
-  .vgrid{grid-template-columns:1fr}
-  .inv-head{flex-direction:column;gap:14px}
-  .inv-right{text-align:left}
-  .invoice{padding:20px}
-  .buttons{width:100%}
-  .buttons button{flex:1;text-align:center}
+/* Sync Badge */
+.sync-badge {
+  position: fixed;
+  top: 74px;
+  right: 18px;
+  z-index: 80;
+  padding: 7px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  background: #888;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 }
 
-/* ===== Color Pickers ===== */
-.color-grid {
+.sync-badge.ok {
+  background: #2d6a4f;
+}
+
+.sync-badge.saving {
+  background: #b8913a;
+}
+
+.sync-badge.error {
+  background: #c0392b;
+}
+
+/* Topbar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 8px 20px rgba(184,145,58,0.28);
+}
+
+.brand h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 21px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.brand small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.18s ease;
+}
+
+button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+button.primary {
+  background: var(--text);
+  color: white;
+  border-color: var(--text);
+}
+
+button.primary:hover {
+  color: white;
+  opacity: 0.9;
+}
+
+/* Layout */
+.wrap {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 28px;
+  padding: 28px;
+  max-width: 1480px;
+  margin: auto;
+  align-items: start;
+}
+
+/* Editor */
+.editor {
+  position: sticky;
+  top: 86px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 22px 55px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+
+.editor-head {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #fff, #faf7f0);
+}
+
+.editor-head h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  margin: 0;
+}
+
+.editor-head span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.editor-body {
+  padding: 18px 22px 24px;
+}
+
+.sec-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin: 22px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sec-title::before,
+.sec-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.color-field label {
+.field label {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .8px;
+  letter-spacing: 0.8px;
   color: var(--muted);
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
-.color-field input[type="color"] {
+input,
+textarea {
   width: 100%;
-  height: 42px;
-  padding: 4px;
+  padding: 11px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  background: var(--input-bg);
+  color: var(--text);
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(184,145,58,0.12);
+  background: white;
+}
+
+textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.irow {
+  display: grid;
+  grid-template-columns: 1fr 65px 90px 36px;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.rdel {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 17px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0;
+}
+
+.rdel:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: white;
+}
+
+.addbtn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 800;
   cursor: pointer;
 }
 
-/* ===== Invoice Custom Colors ===== */
-:root {
-  --company-name-color: #1A1410;
-  --company-details-color: #666666;
-  --invoice-title-color: #1A1410;
-  --invoice-main-text: #1A1A1A;
-  --invoice-muted-text: #777777;
+.addbtn:hover {
+  border-color: var(--accent);
+  background: rgba(184,145,58,0.06);
 }
 
-.inv-co h1 {
-  color: var(--company-name-color) !important;
+/* Preview */
+.prevcol {
+  min-width: 0;
 }
 
-.inv-co p {
-  color: var(--company-details-color) !important;
+.prevlabel {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
 }
 
-.inv-title {
-  color: var(--invoice-title-color) !important;
+.prevframe {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
 
-.inv-card .val,
-.inv-tbl td,
-.inv-right .line b,
-.trow.grand {
-  color: var(--invoice-main-text) !important;
+.prevscale {
+  transform-origin: top center;
 }
 
-.inv-line,
-.inv-card .sub,
-.trow,
-.inv-footer,
-.inv-tbl th {
-  color: var(--invoice-muted-text) !important;
-}
-
-.inv-sec,
-.inv-card .lbl {
-  color: var(--accent) !important;
+/* Invoice A4 */
+.invoice {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  padding: 18mm;
+  position: relative;
+  box-shadow: 0 32px 85px rgba(0,0,0,0.13);
+  color: var(--invoice-main-text);
 }
 
 .invoice::before {
-  background: linear-gradient(
-    90deg,
-    #7A5C1F,
-    var(--accent),
-    var(--gold),
-    var(--accent),
-    #7A5C1F
-  ) !important;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--top-line);
 }
 
-@media(max-width:680px) {
-  .color-grid {
-    grid-template-columns: 1fr;
-  }
+.inv-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  padding-bottom: 15px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.inv-co h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 26pt;
+  margin: 0 0 6px;
+  color: var(--company-name-color);
+  letter-spacing: -0.4px;
+}
+
+.inv-co p {
+  white-space: pre-line;
+  font-size: 9.5pt;
+  line-height: 1.55;
+  color: var(--company-details-color);
+  margin: 0;
+}
+
+.inv-right {
+  text-align: right;
+  min-width: 170px;
+}
+
+.inv-title {
+  font-family: "Playfair Display", serif;
+  font-size: 30pt;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: var(--invoice-title-color);
+}
+
+.inv-line {
+  font-size: 9.5pt;
+  color: var(--invoice-muted-text);
+  margin-top: 4px;
+}
+
+.inv-line b {
+  color: var(--invoice-main-text);
+}
+
+.inv-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.inv-card {
+  padding: 13px;
+  border-radius: 9px;
+  background: #f8f7f4;
+  border: 1px solid #edeae4;
+}
+
+.inv-card .lbl {
+  font-size: 8pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.inv-card .val {
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--invoice-main-text);
+}
+
+.inv-card .sub {
+  font-size: 9.5pt;
+  color: var(--invoice-muted-text);
+  margin-top: 3px;
+}
+
+.vgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.inv-sec {
+  margin: 22px 0 8px;
+  font-family: "Playfair Display", serif;
+  font-size: 13pt;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inv-sec::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.inv-tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inv-tbl th {
+  padding: 8px 0;
+  font-size: 8pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--invoice-muted-text);
+  text-align: left;
+  border-bottom: 2px solid #1a1a1a;
+}
+
+.inv-tbl td {
+  padding: 7px 0;
+  font-size: 10pt;
+  border-bottom: 1px solid #edeae4;
+  color: var(--invoice-main-text);
+}
+
+.inv-tbl th:nth-child(n+2),
+.inv-tbl td:nth-child(n+2) {
+  text-align: right;
+}
+
+.inv-totals {
+  width: 260px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-top: 16px;
+}
+
+.trow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 10pt;
+  color: var(--invoice-muted-text);
+}
+
+.trow.grand {
+  border-top: 2px solid #1a1a1a;
+  margin-top: 8px;
+  padding-top: 10px;
+  font-family: "Playfair Display", serif;
+  font-size: 16pt;
+  font-weight: 700;
+  color: var(--invoice-main-text);
 }
 
 #pGrand {
-  font-family: 'Times New Roman', sans-serif !important;
-  font-size: 18pt;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
 }
-@media print{
-  body{background:white;padding:0;margin:0}
-  .topbar,.editor,.sync-badge,.prevlabel,.buttons{display:none!important}
-  .wrap{display:block;padding:0;max-width:none}
-  .prevframe{overflow:visible}
-  .prevscale{transform:none!important;width:auto!important;height:auto!important}
-  .invoice{width:100%;min-height:auto;box-shadow:none;border-radius:0;padding:14mm}
+
+.inv-footer {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  font-size: 9pt;
+  color: var(--invoice-muted-text);
+  font-style: italic;
+}
+
+/* Mobile */
+@media(max-width: 1100px) {
+  .wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .editor {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media(max-width: 680px) {
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .wrap {
+    padding: 16px;
+    gap: 18px;
+  }
+
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .irow {
+    grid-template-columns: 1fr 60px 82px 32px;
+  }
+
+  .inv-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .vgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .inv-head {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .inv-right {
+    text-align: left;
+  }
+
+  .invoice {
+    padding: 20px;
+  }
+
+  .buttons {
+    width: 100%;
+  }
+
+  .buttons button {
+    flex: 1;
+  }
+}
+
+/* Print */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    background: white !important;
+    padding: 0;
+    margin: 0;
+  }
+
+  .no-print,
+  .topbar,
+  .editor,
+  .sync-badge,
+  .prevlabel {
+    display: none !important;
+  }
+
+  .wrap {
+    display: block;
+    padding: 0;
+    max-width: none;
+  }
+
+  .prevframe {
+    overflow: visible;
+  }
+
+  .prevscale {
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .invoice {
+    width: 100%;
+    min-height: auto;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 14mm;
+  }
 }
 </style>
 </head>
+
 <body>
 
 <div class="sync-badge" id="syncBadge">
@@ -281,109 +671,87 @@ textarea{min-height:70px;resize:vertical}
   <span id="syncMsg">Connecting</span>
 </div>
 
-<div class="topbar">
-  <h1>Auto Invoice</h1>
-  <div class="buttons">
-    <button onclick="copyLink()">📋 Copy Link</button>
-    <button onclick="clearAll()">Clear All</button>
-    <button class="primary" onclick="window.print()">📄 PDF</button>
+<header class="topbar no-print">
+  <div class="brand">
+    <div class="brand-icon">₹</div>
+    <div>
+      <h1>Auto Invoice</h1>
+      <small>Realtime shared invoice</small>
+    </div>
   </div>
-</div>
+
+  <div class="buttons">
+    <button type="button" onclick="copyLink()">📋 Copy Share Link</button>
+    <button type="button" class="primary" onclick="printPDF()">📄 Save PDF</button>
+  </div>
+</header>
 
 <div class="wrap">
 
   <!-- Editor -->
-  <aside class="editor">
+  <aside class="editor no-print">
     <div class="editor-head">
       <h2>Invoice Editor</h2>
-      <span id="linkDisplay" style="font-size:12px;color:var(--muted);word-break:break-all;"></span>
+      <span id="linkDisplay">Loading link...</span>
     </div>
-    <div class="body">
-	
-	
-<div class="sec-title">Colors</div>
 
-<div class="color-grid">
-  <div class="color-field">
-    <label>Accent / Gold</label>
-    <input id="cAccent" type="color" value="#B8913A">
-  </div>
-
-  <div class="color-field">
-    <label>Company Name</label>
-    <input id="cCompanyName" type="color" value="#1A1410">
-  </div>
-
-  <div class="color-field">
-    <label>Company Address</label>
-    <input id="cCompanyDetails" type="color" value="#666666">
-  </div>
-
-  <div class="color-field">
-    <label>Invoice Title</label>
-    <input id="cInvoiceTitle" type="color" value="#1A1410">
-  </div>
-
-  <div class="color-field">
-    <label>Main Text</label>
-    <input id="cMainText" type="color" value="#1A1A1A">
-  </div>
-
-  <div class="color-field">
-    <label>Muted Text</label>
-    <input id="cMutedText" type="color" value="#777777">
-  </div>
-</div>
+    <div class="editor-body">
 
       <div class="sec-title">Customer & Vehicle</div>
+
       <div class="grid2">
         <div class="field">
           <label>Customer Name</label>
-          <input id="fName" placeholder="">
+          <input id="fName" placeholder="Customer name" autocomplete="off">
         </div>
+
         <div class="field">
           <label>Phone</label>
-          <input id="fPhone" placeholder="">
+          <input id="fPhone" placeholder="98765 43210" autocomplete="off">
         </div>
+
         <div class="field">
           <label>Car Model</label>
-          <input id="fCar" placeholder="">
+          <input id="fCar" placeholder="Maruti Swift" autocomplete="off">
         </div>
+
         <div class="field">
           <label>Kilometers</label>
-          <input id="fKm" placeholder="">
+          <input id="fKm" placeholder="45,200 km" autocomplete="off">
         </div>
+
         <div class="field">
           <label>Invoice Date</label>
-          <input id="fDate" type="date">
+          <input id="fDate" type="date" autocomplete="off">
         </div>
+
         <div class="field">
           <label>Invoice No</label>
-          <input id="fInv">
+          <input id="fInv" autocomplete="off">
         </div>
       </div>
 
       <div class="sec-title">Accessories & Parts</div>
       <div id="partsList"></div>
-      <button class="addbtn" onclick="addRow('parts')">+ Add Part</button>
+      <button type="button" class="addbtn" onclick="addPartRow()">+ Add Part</button>
 
-      <div class="sec-title">Labor Charges & Other</div>
+      <div class="sec-title">Labor & Other Charges</div>
       <div id="laborList"></div>
-      <button class="addbtn" onclick="addRow('labor')">+ Add Labor</button>
+      <button type="button" class="addbtn" onclick="addLaborRow()">+ Add Labor</button>
 
       <div class="sec-title">Notes</div>
-      <textarea id="fNotes" placeholder="Thank you, Visit Again."></textarea>
+      <textarea id="fNotes" placeholder="Thank you for your business." autocomplete="off"></textarea>
 
-      <div class="eactions">
-        <button onclick="clearAll()">Clear All</button>
-        <button class="primary" onclick="window.print()">Print PDF</button>
-      </div>
     </div>
   </aside>
 
   <!-- Preview -->
   <main class="prevcol">
-    <div class="prevlabel" style="display:none"></div>
+    <div class="prevlabel no-print">
+      <span>A4 Live Preview</span>
+      <span>Exact print output</span>
+    </div>
+
     <div class="prevframe">
       <div class="prevscale" id="scaler">
         <section class="invoice" id="invoiceEl">
@@ -393,10 +761,11 @@ textarea{min-height:70px;resize:vertical}
               <h1 id="coName"></h1>
               <p id="coDetails"></p>
             </div>
+
             <div class="inv-right">
               <div class="inv-title">Invoice</div>
-              <div class="inv-line">No : <b id="pInv"></b></div>
-              <div class="inv-line">Date : <b id="pDate"></b></div>
+              <div class="inv-line">No. <b id="pInv"></b></div>
+              <div class="inv-line">Date <b id="pDate"></b></div>
             </div>
           </div>
 
@@ -406,6 +775,7 @@ textarea{min-height:70px;resize:vertical}
               <div class="val" id="pName">—</div>
               <div class="sub" id="pPhone">—</div>
             </div>
+
             <div class="inv-card">
               <div class="lbl">Vehicle</div>
               <div class="vgrid">
@@ -413,8 +783,9 @@ textarea{min-height:70px;resize:vertical}
                   <div class="sub">Model</div>
                   <div class="val" id="pCar">—</div>
                 </div>
+
                 <div>
-                  <div class="sub">Odometer(Km)</div>
+                  <div class="sub">Odometer</div>
                   <div class="val" id="pKm">—</div>
                 </div>
               </div>
@@ -423,20 +794,45 @@ textarea{min-height:70px;resize:vertical}
 
           <div class="inv-sec">Accessories & Parts</div>
           <table class="inv-tbl">
-            <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
             <tbody id="pParts"></tbody>
           </table>
 
-          <div class="inv-sec">Labor Charges & Other</div>
+          <div class="inv-sec">Labor & Other</div>
           <table class="inv-tbl">
-            <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
             <tbody id="pLabor"></tbody>
           </table>
 
           <div class="inv-totals">
-            <div class="trow">Parts Total <span id="pPartT">₹0.00</span></div>
-            <div class="trow">Labor Total <span id="pLabT">₹0.00</span></div>
-            <div class="trow grand">Grand Total <span id="pGrand">₹0.00</span></div>
+            <div class="trow">
+              <span>Parts Total</span>
+              <span id="pPartT">₹0.00</span>
+            </div>
+
+            <div class="trow">
+              <span>Labor Total</span>
+              <span id="pLabT">₹0.00</span>
+            </div>
+
+            <div class="trow grand">
+              <span>Grand Total</span>
+              <span id="pGrand">₹0.00</span>
+            </div>
           </div>
 
           <div class="inv-footer" id="pNotes"></div>
@@ -448,9 +844,10 @@ textarea{min-height:70px;resize:vertical}
 
 </div>
 
-<script>/* ════════════════════════════════
-   FIREBASE CONFIG — REPLACE THIS
-   ════════════════════════════════ */
+<script>
+/* =====================================================
+   FIREBASE CONFIG — REPLACE THIS WITH YOUR OWN CONFIG
+===================================================== */
 const firebaseConfig = {
  apiKey: "AIzaSyCH5lWduhcIp4OJZv5ROx56nBnbydoqvnE",
   authDomain: "rishimotors-86908.firebaseapp.com",
@@ -463,242 +860,254 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* ════════════════════════════════
+db.enablePersistence({ synchronizeTabs: true }).catch(function() {
+  // Offline persistence may fail in some browsers/tabs. App still works online.
+});
+
+/* =====================================================
    COMPANY DETAILS — EDIT HERE
-   ════════════════════════════════ */
+===================================================== */
 const CO = {
-   name: "RISHI MOTORS",
-  details: "Plot No.108, HIG Phase 15,Kphb Colony\nKukatpally, Hyderabad\n+91 8801073595",
-  note: "Thank you, Visit Again."
+  name: "PREMIER AUTO CARE",
+  details: "Shop No. 12, Main Market Road\nNew Delhi — 110001\n+91 98765 43210\ninfo@premierautocare.in",
+  note: "Thank you for your business. Goods once sold will not be taken back."
 };
 
-/* ════════════════════════════════
+/* =====================================================
    GLOBALS
-   ════════════════════════════════ */
+===================================================== */
 const $ = id => document.getElementById(id);
-const INVOICE_FIELDS = ["fName","fPhone","fCar","fKm","fDate","fInv","fNotes"];
 
-const COLOR_FIELDS = [
-  "cAccent",
-  "cCompanyName",
-  "cCompanyDetails",
-  "cInvoiceTitle",
-  "cMainText",
-  "cMutedText"
+const FIELDS = [
+  "fName",
+  "fPhone",
+  "fCar",
+  "fKm",
+  "fDate",
+  "fInv",
+  "fNotes"
 ];
 
-const COLOR_STORAGE_KEY = "autoInvoiceSavedColors";
-
-const DEFAULT_COLORS = {
-  cAccent: "#B8913A",
-  cCompanyName: "#1A1410",
-  cCompanyDetails: "#666666",
-  cInvoiceTitle: "#1A1410",
-  cMainText: "#1A1A1A",
-  cMutedText: "#777777",
-  cGrandFont: "'Playfair Display', serif"
-  
-};
-
-function setDefaultColors() {
-  COLOR_FIELDS.forEach(function(id) {
-    if ($(id) && DEFAULT_COLORS[id]) {
-      $(id).value = DEFAULT_COLORS[id];
-    }
-  });
-}
-
-function saveColorDefaults() {
-  const data = {};
-
-  COLOR_FIELDS.forEach(function(id) {
-    if ($(id)) {
-      data[id] = $(id).value;
-    }
-  });
-
-  localStorage.setItem(COLOR_STORAGE_KEY, JSON.stringify(data));
-}
-
-function loadColorDefaults() {
-  setDefaultColors();
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(COLOR_STORAGE_KEY));
-
-    if (saved) {
-      COLOR_FIELDS.forEach(function(id) {
-        if ($(id) && saved[id]) {
-          $(id).value = saved[id];
-        }
-      });
-    }
-  } catch (e) {
-    console.log("No saved colors found");
-  }
-
-  applyColors();
-}
-
-const FIELDS = INVOICE_FIELDS.concat(COLOR_FIELDS);
 const CUR = "₹";
 
-let docRef = null;
-let isRemote = false;
-let saveTimer = null;
-let unsubscribe = null;
+const CLIENT_ID = "client_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-/* ════════════════════════════════
+let docRef = null;
+let saveTimer = null;
+let isRemote = false;
+let unsubscribe = null;
+let hasLoadedOnce = false;
+
+/* =====================================================
    SYNC UI
-   ════════════════════════════════ */
+===================================================== */
 function setSync(state, msg) {
   const badge = $("syncBadge");
   badge.className = "sync-badge " + state;
-  $("syncDot").textContent = state === "ok" ? "✓" : state === "saving" ? "●" : "!";
-  $("syncMsg").textContent = msg || (state === "ok" ? "Synced" : state === "saving" ? "Saving..." : "Error");
+
+  if (state === "ok") {
+    $("syncDot").textContent = "✓";
+    $("syncMsg").textContent = msg || "Synced";
+  } else if (state === "saving") {
+    $("syncDot").textContent = "●";
+    $("syncMsg").textContent = msg || "Saving...";
+  } else {
+    $("syncDot").textContent = "!";
+    $("syncMsg").textContent = msg || "Error";
+  }
 }
 
-/* ════════════════════════════════
-   GET OR CREATE INVOICE ID
-   ════════════════════════════════ */
+/* =====================================================
+   INVOICE ID / SHARE LINK
+===================================================== */
 function getInvoiceID() {
   const params = new URLSearchParams(window.location.search);
   let id = params.get("id");
+
   if (id) return id;
 
   id = "inv_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
   params.set("id", id);
+
   window.history.replaceState({}, "", window.location.pathname + "?" + params.toString());
+
   return id;
 }
 
-/* ════════════════════════════════
-   COPY LINK & NEW INVOICE
-   ════════════════════════════════ */
 function copyLink() {
-  navigator.clipboard.writeText(window.location.href)
-    .then(() => { setSync("ok", "Link copied!"); setTimeout(() => setSync("ok"), 2000); })
-    .catch(() => alert("Copy this link:\n" + window.location.href));
+  const url = window.location.href;
+
+  navigator.clipboard.writeText(url).then(function() {
+    setSync("ok", "Link copied!");
+    setTimeout(function() {
+      setSync("ok");
+    }, 1800);
+  }).catch(function() {
+    prompt("Copy this link:", url);
+  });
 }
 
-function newInvoice() {
-  if (!confirm("Start a new invoice? This creates a new link.")) return;
-  const id = "inv_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  // location.replace() prevents browser cache from restoring old form data
-  window.location.replace(window.location.pathname + "?id=" + id);
+/* =====================================================
+   FORMATTERS
+===================================================== */
+function money(value) {
+  return CUR + Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
-/* ════════════════════════════════
-   FORMATTING
-   ════════════════════════════════ */
-function money(v) {
-  return CUR + Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function fmtDate(value) {
+  if (!value) return "—";
+
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
 }
-function fmtDate(d) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-}
+
 function makeInvNo() {
   const d = new Date();
-  return "INV-" ;
+
+  return "INV-" +
+    d.getFullYear() +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    String(d.getDate()).padStart(2, "0") +
+    "-" +
+    String(d.getHours()).padStart(2, "0") +
+    String(d.getMinutes()).padStart(2, "0");
 }
 
-/* ════════════════════════════════
+/* =====================================================
    ITEM ROWS
-   ════════════════════════════════ */
+===================================================== */
+function addPartRow() {
+  addRow("parts");
+  onChange();
+}
+
+function addLaborRow() {
+  addRow("labor");
+  onChange();
+}
+
 function addRow(type, data) {
   const row = document.createElement("div");
   row.className = "irow";
 
-  const inp1 = document.createElement("input"); inp1.className = "idesc"; inp1.placeholder = "Description"; inp1.autocomplete = "off";
-  const inp2 = document.createElement("input"); inp2.className = "iqty"; inp2.type = "number"; inp2.min = "0"; inp2.value = "1"; inp2.autocomplete = "off";
-  const inp3 = document.createElement("input"); inp3.className = "irate"; inp3.type = "number"; inp3.min = "0"; inp3.step = "0.01"; inp3.value = "0"; inp3.autocomplete = "off";
-  const del = document.createElement("button"); del.className = "rdel"; del.textContent = "×";
+  const desc = document.createElement("input");
+  desc.className = "idesc";
+  desc.placeholder = "Description";
+  desc.autocomplete = "off";
 
-  del.onclick = () => { row.remove(); updatePreview(); debounceSave(); };
+  const qty = document.createElement("input");
+  qty.className = "iqty";
+  qty.type = "number";
+  qty.min = "0";
+  qty.value = "1";
+  qty.autocomplete = "off";
+
+  const rate = document.createElement("input");
+  rate.className = "irate";
+  rate.type = "number";
+  rate.min = "0";
+  rate.step = "0.01";
+  rate.value = "0";
+  rate.autocomplete = "off";
+
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "rdel";
+  del.textContent = "×";
 
   if (data) {
-    inp1.value = data.d || "";
-    inp2.value = data.q || 1;
-    inp3.value = data.r || 0;
+    desc.value = data.d || "";
+    qty.value = data.q || "1";
+    rate.value = data.r || "0";
   }
 
-  [inp1, inp2, inp3].forEach(inp => inp.addEventListener("input", () => { updatePreview(); debounceSave(); }));
+  [desc, qty, rate].forEach(function(input) {
+    input.addEventListener("input", onChange);
+  });
 
-  row.append(inp1, inp2, inp3, del);
-  (type === "parts" ? $("partsList") : $("laborList")).appendChild(row);
+  del.addEventListener("click", function() {
+    row.remove();
+    onChange();
+  });
+
+  row.appendChild(desc);
+  row.appendChild(qty);
+  row.appendChild(rate);
+  row.appendChild(del);
+
+  if (type === "parts") {
+    $("partsList").appendChild(row);
+  } else {
+    $("laborList").appendChild(row);
+  }
 }
 
-function readRows(id) {
-  return Array.from(document.querySelectorAll("#" + id + " .irow")).map(r => ({
-    d: r.querySelector(".idesc").value,
-    q: r.querySelector(".iqty").value,
-    r: r.querySelector(".irate").value
-  }));
+function readRows(listId) {
+  return Array.from(document.querySelectorAll("#" + listId + " .irow")).map(function(row) {
+    return {
+      d: row.querySelector(".idesc").value,
+      q: row.querySelector(".iqty").value,
+      r: row.querySelector(".irate").value
+    };
+  });
 }
 
-/* ════════════════════════════════
-   CALC & PREVIEW
-   ════════════════════════════════ */
+/* =====================================================
+   CALCULATIONS
+===================================================== */
 function calcTable(listId, tbodyId) {
   const rows = document.querySelectorAll("#" + listId + " .irow");
   const tbody = $(tbodyId);
-  tbody.innerHTML = "";
-  let total = 0, has = false;
 
-  rows.forEach(r => {
-    const desc = r.querySelector(".idesc").value.trim();
-    const qty = parseFloat(r.querySelector(".iqty").value) || 0;
-    const rate = parseFloat(r.querySelector(".irate").value) || 0;
-    if (!desc && qty === 0 && rate === 0) return;
-    has = true;
-    const amt = qty * rate;
-    total += amt;
+  tbody.innerHTML = "";
+
+  let total = 0;
+  let hasItems = false;
+
+  rows.forEach(function(row) {
+    const desc = row.querySelector(".idesc").value.trim();
+    const qty = parseFloat(row.querySelector(".iqty").value) || 0;
+    const rate = parseFloat(row.querySelector(".irate").value) || 0;
+
+    if (!desc && rate === 0) return;
+
+    hasItems = true;
+
+    const amount = qty * rate;
+    total += amount;
+
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${desc||"—"}</td><td>${qty}</td><td>${money(rate)}</td><td>${money(amt)}</td>`;
+
+    tr.innerHTML =
+      "<td>" + (desc || "—") + "</td>" +
+      "<td>" + qty + "</td>" +
+      "<td>" + money(rate) + "</td>" +
+      "<td>" + money(amount) + "</td>";
+
     tbody.appendChild(tr);
   });
 
-  if (!has) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#BBB;font-style:italic">No items</td></tr>';
+  if (!hasItems) {
+    tbody.innerHTML =
+      '<tr><td colspan="4" style="text-align:center;color:#bbb;font-style:italic;">No items</td></tr>';
   }
+
   return total;
 }
 
-
-function lightenColor(hex, percent) {
-  hex = hex.replace("#", "");
-
-  const num = parseInt(hex, 16);
-  let r = (num >> 16) + percent;
-  let g = ((num >> 8) & 0x00FF) + percent;
-  let b = (num & 0x0000FF) + percent;
-
-  r = Math.max(Math.min(255, r), 0);
-  g = Math.max(Math.min(255, g), 0);
-  b = Math.max(Math.min(255, b), 0);
-
-  return "#" + (b | (g << 8) | (r << 16)).toString(16).padStart(6, "0");
-}
-
-function applyColors() {
-  const accent = $("cAccent").value || "#B8913A";
-
-  document.documentElement.style.setProperty("--accent", accent);
-  document.documentElement.style.setProperty("--gold", lightenColor(accent, 35));
-
-  document.documentElement.style.setProperty("--company-name-color", $("cCompanyName").value || "#C70505");
-  document.documentElement.style.setProperty("--company-details-color", $("cCompanyDetails").value || "#666666");
-  document.documentElement.style.setProperty("--invoice-title-color", $("cInvoiceTitle").value || "#1A1410");
-  document.documentElement.style.setProperty("--invoice-main-text", $("cMainText").value || "#1A1A1A");
-  document.documentElement.style.setProperty("--invoice-muted-text", $("cMutedText").value || "#777777");
-}
-
-
+/* =====================================================
+   UPDATE PREVIEW
+===================================================== */
 function updatePreview() {
-applyColors();
   $("coName").textContent = CO.name;
   $("coDetails").textContent = CO.details;
+
   $("pName").textContent = $("fName").value || "—";
   $("pPhone").textContent = $("fPhone").value || "—";
   $("pCar").textContent = $("fCar").value || "—";
@@ -706,137 +1115,210 @@ applyColors();
   $("pInv").textContent = $("fInv").value || "—";
   $("pDate").textContent = fmtDate($("fDate").value);
 
-  const pt = calcTable("partsList", "pParts");
-  const lt = calcTable("laborList", "pLabor");
-  $("pPartT").textContent = money(pt);
-  $("pLabT").textContent = money(lt);
-  $("pGrand").textContent = money(pt + lt);
+  const partsTotal = calcTable("partsList", "pParts");
+  const laborTotal = calcTable("laborList", "pLabor");
+
+  $("pPartT").textContent = money(partsTotal);
+  $("pLabT").textContent = money(laborTotal);
+  $("pGrand").textContent = money(partsTotal + laborTotal);
+
   $("pNotes").textContent = $("fNotes").value || CO.note;
+
+  fitPreview();
 }
 
-/* ════════════════════════════════
+/* =====================================================
    FIREBASE SAVE / LOAD
-   ════════════════════════════════ */
+===================================================== */
 function getFormData() {
   const data = {};
-  FIELDS.forEach(id => data[id] = $(id).value);
+
+  FIELDS.forEach(function(id) {
+    data[id] = $(id).value;
+  });
+
   data.parts = readRows("partsList");
   data.labor = readRows("laborList");
+
+  data._updatedBy = CLIENT_ID;
   data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+
   return data;
 }
 
 function saveToFirebase() {
   if (!docRef || isRemote) return;
+
   setSync("saving");
+
   docRef.set(getFormData(), { merge: true })
-    .then(() => setSync("ok"))
-    .catch(err => { console.error(err); setSync("error"); });
+    .then(function() {
+      setSync("ok");
+    })
+    .catch(function(err) {
+      console.error("Save error:", err);
+      setSync("error", "Save failed");
+    });
 }
 
 function debounceSave() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveToFirebase, 600);
+  saveTimer = setTimeout(saveToFirebase, 650);
 }
 
 function loadFormData(data) {
-  FIELDS.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; });
+  isRemote = true;
+
+  FIELDS.forEach(function(id) {
+    if (data[id] !== undefined) {
+      $(id).value = data[id];
+    }
+  });
+
   $("partsList").innerHTML = "";
   $("laborList").innerHTML = "";
-  (data.parts || []).forEach(p => addRow("parts", p));
-  (data.labor || []).forEach(l => addRow("labor", l));
-  if (!data.parts?.length) addRow("parts");
-  if (!data.labor?.length) addRow("labor");
+
+  const parts = data.parts || [];
+  const labor = data.labor || [];
+
+  if (parts.length) {
+    parts.forEach(function(item) {
+      addRow("parts", item);
+    });
+  } else {
+    addRow("parts");
+  }
+
+  if (labor.length) {
+    labor.forEach(function(item) {
+      addRow("labor", item);
+    });
+  } else {
+    addRow("labor");
+  }
+
+  updatePreview();
+
+  isRemote = false;
 }
 
-/* ════════════════════════════════
-   START SYNC (FIXED RACE CONDITION)
-   ════════════════════════════════ */
+/* =====================================================
+   REALTIME SYNC
+===================================================== */
 function startFirestoreSync() {
   const id = getInvoiceID();
+
   $("linkDisplay").textContent = "ID: " + id;
 
-  // Detach old listener if exists
+  docRef = db.collection("sharedInvoices").doc(id);
+
   if (unsubscribe) unsubscribe();
 
-  docRef = db.collection("sharedInvoices").doc(id);
   setSync("saving", "Loading...");
 
-  unsubscribe = docRef.onSnapshot(snap => {
-    if (snap.exists) {
-      isRemote = true;
-      loadFormData(snap.data());
-      updatePreview();
-      isRemote = false;
-      setSync("ok");
-    } else {
-      // New invoice: save clean default data
-      saveToFirebase();
+  unsubscribe = docRef.onSnapshot(function(snap) {
+    if (!snap.exists) {
+      if (!hasLoadedOnce) {
+        hasLoadedOnce = true;
+        saveToFirebase();
+      }
+      return;
     }
-  }, err => {
-    console.error("Firestore error:", err);
-    setSync("error", "Connection error");
+
+    const data = snap.data();
+
+    if (data._updatedBy === CLIENT_ID && hasLoadedOnce) {
+      setSync("ok");
+      return;
+    }
+
+    hasLoadedOnce = true;
+
+    loadFormData(data);
+    setSync("ok");
+
+  }, function(err) {
+    console.error("Firestore sync error:", err);
+    setSync("error", "Sync error");
   });
 }
 
-/* ════════════════════════════════
-   FIT PREVIEW
-   ════════════════════════════════ */
+/* =====================================================
+   CHANGE HANDLER
+===================================================== */
+function onChange() {
+  if (isRemote) return;
+
+  updatePreview();
+  debounceSave();
+}
+
+/* =====================================================
+   A4 PREVIEW SCALING
+===================================================== */
 function fitPreview() {
-  const s = $("scaler"), w = s.parentElement, inv = $("invoiceEl");
-  s.style.transform = "none"; s.style.width = "auto"; s.style.height = "auto";
-  const avail = w.clientWidth, full = inv.offsetWidth;
-  if (avail < full) {
-    const scale = avail / full;
-    s.style.transform = `scale(${scale})`;
-    s.style.width = full + "px";
-    s.style.height = (inv.offsetHeight * scale) + "px";
+  const scaler = $("scaler");
+  const frame = scaler.parentElement;
+  const invoice = $("invoiceEl");
+
+  scaler.style.transform = "none";
+  scaler.style.width = "auto";
+  scaler.style.height = "auto";
+
+  const available = frame.clientWidth;
+  const fullWidth = invoice.offsetWidth;
+
+  if (available < fullWidth) {
+    const scale = available / fullWidth;
+    scaler.style.transform = "scale(" + scale + ")";
+    scaler.style.width = fullWidth + "px";
+    scaler.style.height = (invoice.offsetHeight * scale) + "px";
   }
 }
 
-/* ════════════════════════════════
-   CLEAR ALL
-   ════════════════════════════════ */
-function clearAll() {
-  if (!confirm("Clear all fields?")) return;
-  FIELDS.forEach(id => $(id).value = "");
-  $("fDate").value = new Date().toISOString().slice(0, 10);
-  $("fInv").value = makeInvNo();
-  $("partsList").innerHTML = "";
-  $("laborList").innerHTML = "";
-  addRow("parts"); addRow("labor");
+/* =====================================================
+   PRINT PDF
+===================================================== */
+function printPDF() {
   updatePreview();
-  saveToFirebase();
+
+  document.title = ($("fInv").value || "invoice").replace(/[^a-z0-9\-_]/gi, "_");
+
+  setTimeout(function() {
+    window.print();
+  }, 200);
 }
 
-/* ════════════════════════════════
-   INIT (FIXED ORDER + BFCACHE BUSTER)
-   ════════════════════════════════ */
+/* =====================================================
+   INIT
+===================================================== */
 function init() {
-  // 1. Force clean state (fixes bfcache restoring old data)
-  FIELDS.forEach(id => $(id).value = "");
   $("fDate").value = new Date().toISOString().slice(0, 10);
   $("fInv").value = makeInvNo();
-  $("partsList").innerHTML = "";
-  $("laborList").innerHTML = "";
-  addRow("parts"); addRow("labor");
+
+  addRow("parts");
+  addRow("labor");
+
+  FIELDS.forEach(function(id) {
+    $(id).addEventListener("input", onChange);
+    $(id).addEventListener("change", onChange);
+  });
+
   updatePreview();
-
-  // 2. Bind inputs
-  FIELDS.forEach(id => $(id).addEventListener("input", () => { updatePreview(); debounceSave(); }));
-
-  // 3. Preview scaling
   fitPreview();
-  window.addEventListener("resize", fitPreview);
-  setTimeout(fitPreview, 300);
-  new MutationObserver(fitPreview).observe($("invoiceEl"), { childList: true, subtree: true, characterData: true });
 
-  // 4. Start sync AFTER form is clean
+  window.addEventListener("resize", fitPreview);
+
+  setTimeout(fitPreview, 400);
+
+  new MutationObserver(fitPreview).observe($("invoiceEl"), {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
   startFirestoreSync();
 }
-
-// Prevent back/forward cache from restoring stale form data
-window.addEventListener("pageshow", e => { if (e.persisted) window.location.reload(); });
 
 init();
 </script>
