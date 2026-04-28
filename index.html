@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Invoice</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* ══════════════════════════════════════════
+   THEME 1: ULTRA LUXURY DEALERSHIP
+   ══════════════════════════════════════════ */
+[data-theme="luxury"]{
+  --bg:#F5F0E8;
+  --editor-bg:rgba(255,255,255,.82);
+  --card:#FFFFFF;
+  --text:#1A1410;
+  --text2:#5C5347;
+  --muted:#8A7F72;
+  --border:#E0D8CC;
+  --accent:#B8913A;
+  --accent2:#D4AF5A;
+  --input-bg:#FDFBF7;
+  --danger:#B03A2E;
+  --radius:18px;
+  --font1:'Playfair Display', serif;
+  --font2:'Inter', sans-serif;
+  --top-line:linear-gradient(90deg,#7A5C1F,#B8913A,#D4C48A,#B8913A,#7A5C1F);
+  --invoice-bg:#FFFFFF;
+  --invoice-watermark:radial-gradient(circle at 90% 10%,rgba(184,145,58,.04),transparent 50%);
+}
+
+[data-theme="luxury"] body{
+  background:
+    radial-gradient(ellipse at 15% 5%,rgba(184,145,58,.08),transparent 40%),
+    radial-gradient(ellipse at 85% 95%,rgba(140,106,47,.06),transparent 40%),
+    repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 40px,
+      rgba(184,145,58,.015) 40px,
+      rgba(184,145,58,.015) 41px
+    ),
+    var(--bg);
+}
+
+/* ══════════════════════════════════════════
+   THEME 2: MINIMAL SCANDINAVIAN
+   ══════════════════════════════════════════ */
+[data-theme="scandi"]{
+  --bg:#FAFAF9;
+  --editor-bg:#FFFFFF;
+  --card:#FFFFFF;
+  --text:#1F2937;
+  --text2:#4B5563;
+  --muted:#9CA3AF;
+  --border:#E5E7EB;
+  --accent:#6B7280;
+  --accent2:#9CA3AF;
+  --input-bg:#F9FAFB;
+  --danger:#DC2626;
+  --radius:12px;
+  --font1:'Space Grotesk', sans-serif;
+  --font2:'Inter', sans-serif;
+  --top-line:linear-gradient(90deg,#D1D5DB,#6B7280,#D1D5DB);
+  --invoice-bg:#FFFFFF;
+  --invoice-watermark:none;
+}
+
+[data-theme="scandi"] body{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(107,114,128,.04),transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 60px,
+      rgba(0,0,0,.008) 60px,
+      rgba(0,0,0,.008) 61px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 60px,
+      rgba(0,0,0,.008) 60px,
+      rgba(0,0,0,.008) 61px
+    ),
+    var(--bg);
+}
+
+/* ══════════════════════════════════════════
+   THEME 3: BLACK & GOLD EXECUTIVE
+   ══════════════════════════════════════════ */
+[data-theme="executive"]{
+  --bg:#0C0C0C;
+  --editor-bg:rgba(22,22,22,.92);
+  --card:#1A1A1A;
+  --text:#F0ECE3;
+  --text2:#B5AFA5;
+  --muted:#6B6560;
+  --border:#2E2A25;
+  --accent:#D4AF37;
+  --accent2:#F0D060;
+  --input-bg:#1E1C18;
+  --danger:#E74C3C;
+  --radius:14px;
+  --font1:'DM Serif Display', serif;
+  --font2:'Inter', sans-serif;
+  --top-line:linear-gradient(90deg,#8B7328,#D4AF37,#F4D06F,#D4AF37,#8B7328);
+  --invoice-bg:#FDFCFA;
+  --invoice-watermark:radial-gradient(circle at 85% 8%,rgba(212,175,55,.05),transparent 45%);
+}
+
+[data-theme="executive"] body{
+  background:
+    radial-gradient(ellipse at 20% 10%,rgba(212,175,55,.06),transparent 45%),
+    radial-gradient(ellipse at 80% 90%,rgba(212,175,55,.04),transparent 45%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.008) 3px,
+      rgba(255,255,255,.008) 4px
+    ),
+    var(--bg);
+}
+
+/* ══════════════════════════════════════════
+   THEME 4: MODERN GERMAN AUTOMOTIVE
+   ══════════════════════════════════════════ */
+[data-theme="german"]{
+  --bg:#101014;
+  --editor-bg:rgba(26,26,30,.94);
+  --card:#1A1A1E;
+  --text:#E8E8EC;
+  --text2:#A0A0A8;
+  --muted:#68686E;
+  --border:#2C2C32;
+  --accent:#E31E24;
+  --accent2:#FF5252;
+  --input-bg:#18181C;
+  --danger:#FF4444;
+  --radius:6px;
+  --font1:'Space Grotesk', sans-serif;
+  --font2:'Inter', sans-serif;
+  --top-line:linear-gradient(90deg,#E31E24,#FF5252,#E31E24);
+  --invoice-bg:#FAFAFA;
+  --invoice-watermark:none;
+}
+
+[data-theme="german"] body{
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.012) 0px,
+      rgba(255,255,255,.012) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.012) 0px,
+      rgba(255,255,255,.012) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    radial-gradient(circle at 50% 50%,rgba(227,30,36,.03),transparent 60%),
+    var(--bg);
+}
+
+
+/* ══════════════════════════════════════════
+   GLOBAL STYLES
+   ══════════════════════════════════════════ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html{
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+body{
+  margin:0;
+  font-family:var(--font2);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .4s,color .3s;
+}
+
+/* ─── Topbar ─── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;
+  padding:14px 26px;
+  background:var(--editor-bg);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  transition:background .3s,border .3s;
+}
+
+.brand{display:flex;align-items:center;gap:12px}
+
+.brand-icon{
+  width:40px;height:40px;
+  border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;
+  display:grid;place-items:center;
+  font-weight:800;font-size:18px;
+  box-shadow:0 8px 20px rgba(0,0,0,.15);
+}
+
+.brand h1{
+  margin:0;
+  font-family:var(--font1);
+  font-size:20px;
+  color:var(--text);
+}
+
+.brand small{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.pill{
+  padding:9px 16px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:inherit;
+  transition:.2s;
+}
+
+.pill:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+
+.pill.solid{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+
+.pill.solid:hover{
+  opacity:.9;
+}
+
+.theme-pick{
+  appearance:none;
+  padding:9px 32px 9px 14px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:inherit;
+  outline:none;
+}
+
+/* ─── Sync ─── */
+.sync{
+  position:fixed;top:74px;right:20px;z-index:60;
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:100px;
+  font-size:12px;font-weight:700;color:white;
+  background:#888;
+  box-shadow:0 6px 20px rgba(0,0,0,.2);
+  transition:.3s;
+}
+
+.sync.ok{background:#2D6A4F}
+.sync.saving{background:#B8913A}
+.sync.err{background:#C0392B}
+
+/* ─── Layout ─── */
+.wrap{
+  display:grid;
+  grid-template-columns:410px 1fr;
+  gap:28px;
+  padding:28px;
+  max-width:1500px;
+  margin:0 auto;
+  align-items:start;
+}
+
+/* ─── Editor Card ─── */
+.editor{
+  position:sticky;top:82px;
+  background:var(--editor-bg);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 20px 50px rgba(0,0,0,.08);
+  overflow:hidden;
+  transition:background .3s,border .3s;
+}
+
+.ed-head{
+  padding:20px 22px;
+  border-bottom:1px solid var(--border);
+}
+
+.ed-head h2{
+  margin:0;
+  font-family:var(--font1);
+  font-size:22px;
+  color:var(--text);
+}
+
+.ed-head span{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.ed-body{
+  padding:18px 22px 26px;
+  max-height:calc(100vh - 160px);
+  overflow-y:auto;
+}
+
+.sec{
+  display:flex;align-items:center;gap:10px;
+  margin:22px 0 12px;
+  font-size:10px;font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--accent);
+}
+
+.sec::before,.sec::after{
+  content:"";flex:1;height:1px;
+  background:var(--border);
+}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.field label{
+  display:block;margin-bottom:5px;
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:var(--muted);
+}
+
+input,textarea{
+  width:100%;
+  padding:11px 13px;
+  border:1px solid var(--border);
+  border-radius:calc(var(--radius)*.5);
+  background:var(--input-bg);
+  color:var(--text);
+  font-size:14px;
+  font-family:var(--font2);
+  outline:none;
+  transition:.2s;
+}
+
+input:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(184,145,58,.1);
+}
+
+textarea{resize:vertical;min-height:68px}
+
+.irow{
+  display:grid;
+  grid-template-columns:1fr 68px 90px 38px;
+  gap:8px;align-items:center;
+  margin-bottom:8px;
+}
+
+.rdel{
+  width:36px;height:36px;
+  border-radius:calc(var(--radius)*.4);
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  font-size:18px;
+  cursor:pointer;
+  display:grid;place-items:center;
+  transition:.15s;
+}
+
+.rdel:hover{background:var(--danger);border-color:var(--danger);color:white}
+
+.addbtn{
+  width:100%;padding:10px;margin-top:6px;
+  border-radius:calc(var(--radius)*.5);
+  border:1px dashed var(--border);
+  background:transparent;
+  color:var(--accent);
+  font-size:13px;font-weight:700;
+  cursor:pointer;
+}
+
+.addbtn:hover{border-color:var(--accent);background:rgba(184,145,58,.06)}
+
+.eactions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;margin-top:20px;
+}
+
+/* ─── Preview ─── */
+.prevcol{min-width:0}
+
+.prevlabel{
+  display:flex;justify-content:space-between;
+  margin:0 0 12px 4px;
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  color:var(--muted);
+}
+
+.prevframe{
+  width:100%;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+}
+
+.prevscale{transform-origin:top center}
+
+/* ─── Invoice A4 ─── */
+.invoice{
+  width:210mm;
+  min-height:297mm;
+  background:var(--invoice-bg);
+  padding:18mm;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.12);
+  color:#1A1A1A;
+  font-family:var(--font2);
+}
+
+.invoice::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:5px;
+  background:var(--top-line);
+}
+
+.invoice::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--invoice-watermark);
+  pointer-events:none;
+}
+
+.inv-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:30px;
+  padding-bottom:16px;
+  margin-bottom:18px;
+  border-bottom:1px solid #E0E0E0;
+  position:relative;z-index:1;
+}
+
+.inv-co h1{
+  margin:0 0 6px;
+  font-family:var(--font1);
+  font-size:26pt;
+  color:#1A1A1A;
+  letter-spacing:-.5px;
+}
+
+.inv-co p{
+  margin:0;
+  white-space:pre-line;
+  font-size:9.5pt;
+  line-height:1.55;
+  color:#666;
+}
+
+.inv-right{text-align:right;min-width:170px}
+
+.inv-right .title{
+  font-family:var(--font1);
+  font-size:30pt;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#1A1A1A;
+  margin:0 0 10px;
+  line-height:1;
+}
+
+.inv-right .line{
+  font-size:9.5pt;
+  color:#888;
+  margin-top:4px;
+}
+
+.inv-right .line b{color:#1A1A1A}
+
+/* Vehicle / Customer Boxes */
+.inv-cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-bottom:18px;
+  position:relative;z-index:1;
+}
+
+.inv-card{
+  padding:14px;
+  border-radius:8px;
+  background:#F8F7F4;
+  border:1px solid #EDEAE4;
+}
+
+.inv-card .lbl{
+  font-size:8pt;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--accent);
+  margin-bottom:6px;
+}
+
+.inv-card .val{
+  font-size:11pt;
+  font-weight:600;
+  color:#1A1A1A;
+}
+
+.inv-card .sub{
+  font-size:9.5pt;
+  color:#777;
+  margin-top:3px;
+}
+
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Section Titles */
+.inv-sec{
+  margin:22px 0 8px;
+  font-family:var(--font1);
+  font-size:13pt;
+  color:var(--accent);
+  display:flex;align-items:center;gap:10px;
+  position:relative;z-index:1;
+}
+
+.inv-sec::after{
+  content:"";flex:1;height:1px;
+  background:#E0E0E0;
+}
+
+/* Tables */
+.inv-tbl{
+  width:100%;
+  border-collapse:collapse;
+  position:relative;z-index:1;
+}
+
+.inv-tbl th{
+  padding:9px 0;
+  font-size:8pt;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:#888;
+  text-align:left;
+  border-bottom:2px solid #1A1A1A;
+}
+
+.inv-tbl td{
+  padding:8px 0;
+  font-size:10pt;
+  border-bottom:1px solid #EDEAE4;
+  color:#1A1A1A;
+}
+
+.inv-tbl th:nth-child(n+2),
+.inv-tbl td:nth-child(n+2){text-align:right}
+
+/* Totals */
+.inv-totals{
+  width:260px;
+  max-width:100%;
+  margin-left:auto;
+  margin-top:16px;
+  position:relative;z-index:1;
+}
+
+.trow{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  font-size:10pt;
+  color:#666;
+}
+
+.trow.grand{
+  border-top:2px solid #1A1A1A;
+  margin-top:8px;
+  padding-top:10px;
+  font-family:var(--font1);
+  font-size:16pt;
+  font-weight:700;
+  color:#1A1A1A;
+}
+
+.inv-footer{
+  margin-top:28px;
+  padding-top:14px;
+  border-top:1px solid #E0E0E0;
+  text-align:center;
+  font-size:9pt;
+  color:#999;
+  font-style:italic;
+  position:relative;z-index:1;
+}
+
+/* ─── Mobile ─── */
+@media(max-width:1100px){
+  .wrap{grid-template-columns:1fr}
+  .editor{position:relative;top:0}
+}
+
+@media(max-width:680px){
+  .topbar{padding:12px 16px}
+  .wrap{padding:16px;gap:20px}
+  .g2{grid-template-columns:1fr}
+  .irow{grid-template-columns:1fr 60px 82px 34px}
+  .inv-head{flex-direction:column;gap:14px}
+  .inv-right{text-align:left}
+  .inv-cards{grid-template-columns:1fr}
+  .vgrid{grid-template-columns:1fr}
+  .eactions{grid-template-columns:1fr}
+  .invoice{padding:20px}
+  .toolbar{width:100%}
+  .pill,.theme-pick{flex:1;text-align:center}
+}
+
+/* ─── Print ─── */
+@media print{
+  @page{size:A4 portrait;margin:0}
+
+  body{background:white!important;padding:0;margin:0}
+
+  .topbar,.editor,.sync,.prevlabel{display:none!important}
+
+  .wrap{display:block;padding:0;max-width:none}
+
+  .prevframe{overflow:visible}
+
+  .prevscale{
+    transform:none!important;
+    width:auto!important;
+    height:auto!important;
+  }
+
+  .invoice{
+    width:100%;
+    min-height:auto;
+    box-shadow:none;
+    border-radius:0;
+    padding:14mm;
+    page-break-after:avoid;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div data-theme="luxury" id="themeRoot">
+
+<!-- Sync -->
+<div class="sync" id="syncBadge">
+  <span id="syncDot">●</span>
+  <span id="syncMsg">Connecting</span>
+</div>
+
+<!-- Topbar -->
+<header class="topbar no-print">
+  <div class="brand">
+    <div class="brand-icon">₹</div>
+    <div>
+      <h1>Auto Invoice</h1>
+      <small>Live collaborative draft</small>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select class="theme-pick" id="themePick" onchange="setTheme(this.value)">
+      <option value="luxury">🏎️ Ultra Luxury</option>
+      <option value="scandi">🌿 Scandinavian</option>
+      <option value="executive">⚫ Black & Gold</option>
+      <option value="german">🇩🇪 German Auto</option>
+    </select>
+    <button class="pill" onclick="copyLink()">📋 Copy Link</button>
+    <button class="pill" onclick="newInvoice()">✨ New</button>
+    <button class="pill solid" onclick="printPDF()">📄 Save PDF</button>
+  </div>
+</header>
+
+<!-- Layout -->
+<div class="wrap">
+
+  <!-- Editor -->
+  <aside class="editor no-print">
+    <div class="ed-head">
+      <h2>Invoice Editor</h2>
+      <span>Auto-syncs as you type</span>
+    </div>
+
+    <div class="ed-body">
+      <div class="sec">Customer & Vehicle</div>
+      <div class="g2">
+        <div class="field">
+          <label>Customer Name</label>
+          <input id="fName" placeholder="Rajesh Kumar">
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input id="fPhone" placeholder="98765 43210">
+        </div>
+        <div class="field">
+          <label>Car Model</label>
+          <input id="fCar" placeholder="Maruti Swift VXI">
+        </div>
+        <div class="field">
+          <label>Kilometers</label>
+          <input id="fKm" placeholder="45,200 km">
+        </div>
+        <div class="field">
+          <label>Invoice Date</label>
+          <input id="fDate" type="date">
+        </div>
+        <div class="field">
+          <label>Invoice No</label>
+          <input id="fInv">
+        </div>
+      </div>
+
+      <div class="sec">Accessories & Parts</div>
+      <div id="partsList"></div>
+      <button class="addbtn" onclick="addRow('parts')">+ Add Part</button>
+
+      <div class="sec">Labor & Other</div>
+      <div id="laborList"></div>
+      <button class="addbtn" onclick="addRow('labor')">+ Add Labor</button>
+
+      <div class="sec">Notes</div>
+      <textarea id="fNotes" placeholder="Thank you for your business."></textarea>
+
+      <div class="eactions">
+        <button class="pill" onclick="newInvoice()">Clear All</button>
+        <button class="pill solid" onclick="printPDF()">Print PDF</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Preview -->
+  <main class="prevcol">
+    <div class="prevlabel no-print">
+      <span>A4 Live Preview</span>
+      <span>Exact print output</span>
+    </div>
+
+    <div class="prevframe">
+      <div class="prevscale" id="scaler">
+        <section class="invoice" id="invoiceEl">
+
+          <div class="inv-head">
+            <div class="inv-co">
+              <h1 id="coName"></h1>
+              <p id="coDetails"></p>
+            </div>
+            <div class="inv-right">
+              <div class="title">Invoice</div>
+              <div class="line">No. <b id="pInv">—</b></div>
+              <div class="line">Date <b id="pDate">—</b></div>
+            </div>
+          </div>
+
+          <div class="inv-cards">
+            <div class="inv-card">
+              <div class="lbl">Bill To</div>
+              <div class="val" id="pName">Customer Name</div>
+              <div class="sub" id="pPhone">—</div>
+            </div>
+            <div class="inv-card">
+              <div class="lbl">Vehicle</div>
+              <div class="vgrid">
+                <div>
+                  <div class="sub" style="font-weight:700">Model</div>
+                  <div class="val" id="pCar">—</div>
+                </div>
+                <div>
+                  <div class="sub" style="font-weight:700">Odometer</div>
+                  <div class="val" id="pKm">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="inv-sec">Accessories & Parts</div>
+          <table class="inv-tbl">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="pParts"></tbody>
+          </table>
+
+          <div class="inv-sec">Labor Charges & Other</div>
+          <table class="inv-tbl">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="pLabor"></tbody>
+          </table>
+
+          <div class="inv-totals">
+            <div class="trow">
+              <span>Parts Total</span>
+              <span id="pPartT">₹0.00</span>
+            </div>
+            <div class="trow">
+              <span>Labor Total</span>
+              <span id="pLabT">₹0.00</span>
+            </div>
+            <div class="trow grand">
+              <span>Grand Total</span>
+              <span id="pGrand">₹0.00</span>
+            </div>
+          </div>
+
+          <div class="inv-footer" id="pNotes"></div>
+
+        </section>
+      </div>
+    </div>
+  </main>
+
+</div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   FIREBASE CONFIG — REPLACE THIS
+   ════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCH5lWduhcIp4OJZv5ROx56nBnbydoqvnE",
+  authDomain: "rishimotors-86908.firebaseapp.com",
+  projectId: "rishimotors-86908",
+  storageBucket: "rishimotors-86908.firebasestorage.app",
+  messagingSenderId: "946307912850",
+  appId: "1:946307912850:web:3f8b293e4ffb850a25024b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+/* ════════════════════════════════
+   COMPANY DETAILS — EDIT HERE
+   ════════════════════════════════ */
+const CO = {
+  name: "PREMIER AUTO CARE",
+  details: "Shop No. 12, Main Market Road\nNew Delhi — 110001\nPhone: +91 98765 43210\nEmail: info@premierautocare.in",
+  note: "Thank you for choosing us. Goods once sold will not be taken back."
+};
+
+/* ════════════════════════════════
+   GLOBALS
+   ════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const FIELDS = ["fName","fPhone","fCar","fKm","fDate","fInv","fNotes"];
+const CUR = "₹";
+
+let docRef    = null;
+let isRemote  = false;
+let saveTimer = null;
+
+/* ════════════════════════════════
+   THEME
+   ════════════════════════════════ */
+function setTheme(t) {
+  $("themeRoot").setAttribute("data-theme", t);
+  localStorage.setItem("autoInvTheme", t);
+  fitPreview();
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem("autoInvTheme");
+  if (saved) {
+    $("themeRoot").setAttribute("data-theme", saved);
+    $("themePick").value = saved;
+  }
+}
+
+/* ════════════════════════════════
+   SYNC UI
+   ════════════════════════════════ */
+function syncUI(state, msg) {
+  const b = $("syncBadge");
+  b.className = "sync " + state;
+  $("syncDot").textContent = state === "ok" ? "✓" : state === "saving" ? "●" : "!";
+  $("syncMsg").textContent = msg || (state === "ok" ? "Synced" : state === "saving" ? "Saving..." : "Error");
+}
+
+/* ════════════════════════════════
+   ID & LINK
+   ════════════════════════════════ */
+function getID() {
+  const p = new URLSearchParams(location.search);
+  let id = p.get("id");
+  if (!id) {
+    id = "inv_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    p.set("id", id);
+    history.replaceState({}, "", location.pathname + "?" + p.toString());
+  }
+  return id;
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href)
+    .then(() => syncUI("ok", "Link copied!"))
+    .catch(() => prompt("Copy this link:", location.href));
+}
+
+/* ════════════════════════════════
+   FORMATTING
+   ════════════════════════════════ */
+function money(v) {
+  return CUR + Number(v || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric"
+  });
+}
+
+function makeInvNo() {
+  const d = new Date();
+  return "INV-" +
+    d.getFullYear() +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    String(d.getDate()).padStart(2, "0") +
+    "-" +
+    String(d.getHours()).padStart(2, "0") +
+    String(d.getMinutes()).padStart(2, "0");
+}
+
+/* ════════════════════════════════
+   ITEMS
+   ════════════════════════════════ */
+function addRow(type, data) {
+  const row = document.createElement("div");
+  row.className = "irow";
+
+  row.innerHTML =
+    '<input class="idesc" placeholder="Description">' +
+    '<input class="iqty" type="number" value="1" min="0">' +
+    '<input class="irate" type="number" value="0" min="0" step="0.01">' +
+    '<button class="rdel">×</button>';
+
+  if (data) {
+    row.querySelector(".idesc").value = data.d || "";
+    row.querySelector(".iqty").value  = data.q || 1;
+    row.querySelector(".irate").value = data.r || 0;
+  }
+
+  row.querySelectorAll("input").forEach(function(inp) {
+    inp.addEventListener("input", onChange);
+  });
+
+  row.querySelector(".rdel").addEventListener("click", function() {
+    row.remove();
+    onChange();
+  });
+
+  var list = type === "parts" ? $("partsList") : $("laborList");
+  list.appendChild(row);
+}
+
+function readRows(id) {
+  var rows = document.querySelectorAll("#" + id + " .irow");
+  var arr = [];
+  rows.forEach(function(r) {
+    arr.push({
+      d: r.querySelector(".idesc").value,
+      q: r.querySelector(".iqty").value,
+      r: r.querySelector(".irate").value
+    });
+  });
+  return arr;
+}
+
+/* ════════════════════════════════
+   CALC & UPDATE PREVIEW
+   ════════════════════════════════ */
+function calcTable(listId, tbodyId) {
+  var rows = document.querySelectorAll("#" + listId + " .irow");
+  var tbody = $(tbodyId);
+  tbody.innerHTML = "";
+  var total = 0;
+  var hasItems = false;
+
+  rows.forEach(function(r) {
+    var d = r.querySelector(".idesc").value.trim();
+    var q = parseFloat(r.querySelector(".iqty").value) || 0;
+    var rt = parseFloat(r.querySelector(".irate").value) || 0;
+
+    if (!d && q === 0 && rt === 0) return;
+
+    hasItems = true;
+    var amt = q * rt;
+    total += amt;
+
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + (d || "—") + "</td>" +
+      "<td>" + q + "</td>" +
+      "<td>" + money(rt) + "</td>" +
+      "<td>" + money(amt) + "</td>";
+    tbody.appendChild(tr);
+  });
+
+  if (!hasItems) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td colspan="4" style="text-align:center;color:#BBB;font-style:italic">No items added</td>';
+    tbody.appendChild(tr);
+  }
+
+  return total;
+}
+
+function updatePreview() {
+  $("coName").textContent = CO.name;
+  $("coDetails").textContent = CO.details;
+
+  $("pName").textContent  = $("fName").value || "Customer Name";
+  $("pPhone").textContent = $("fPhone").value || "—";
+  $("pCar").textContent   = $("fCar").value || "—";
+  $("pKm").textContent    = $("fKm").value || "—";
+  $("pInv").textContent   = $("fInv").value || "—";
+  $("pDate").textContent  = fmtDate($("fDate").value);
+
+  var pt = calcTable("partsList", "pParts");
+  var lt = calcTable("laborList", "pLabor");
+
+  $("pPartT").textContent = money(pt);
+  $("pLabT").textContent  = money(lt);
+  $("pGrand").textContent = money(pt + lt);
+
+  $("pNotes").textContent = $("fNotes").value || CO.note;
+}
+
+/* ════════════════════════════════
+   CHANGE HANDLER
+   ════════════════════════════════ */
+function onChange() {
+  updatePreview();
+  debounceSave();
+}
+
+/* ════════════════════════════════
+   FIREBASE SAVE / LOAD
+   ════════════════════════════════ */
+function getFormData() {
+  var data = {};
+  FIELDS.forEach(function(id) {
+    data[id] = $(id).value;
+  });
+  data.theme = $("themeRoot").getAttribute("data-theme");
+  data.parts = readRows("partsList");
+  data.labor = readRows("laborList");
+  data.ts = firebase.firestore.FieldValue.serverTimestamp();
+  return data;
+}
+
+function loadFormData(data) {
+  FIELDS.forEach(function(id) {
+    if (data[id] !== undefined) $(id).value = data[id];
+  });
+
+  if (data.theme) {
+    $("themeRoot").setAttribute("data-theme", data.theme);
+    $("themePick").value = data.theme;
+  }
+
+  $("partsList").innerHTML = "";
+  $("laborList").innerHTML = "";
+
+  var parts = data.parts || [];
+  var labor = data.labor || [];
+
+  if (parts.length === 0) { addRow("parts"); }
+  else { parts.forEach(function(p) { addRow("parts", p); }); }
+
+  if (labor.length === 0) { addRow("labor"); }
+  else { labor.forEach(function(l) { addRow("labor", l); }); }
+}
+
+function saveNow() {
+  if (!docRef || isRemote) return;
+  syncUI("saving");
+  docRef.set(getFormData(), {merge: true})
+    .then(function() { syncUI("ok"); })
+    .catch(function() { syncUI("err"); });
+}
+
+function debounceSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 800);
+}
+
+function startSync() {
+  var id = getID();
+  docRef = db.collection("sharedInvoices").doc(id);
+
+  syncUI("saving", "Loading...");
+
+  docRef.onSnapshot(
+    function(snap) {
+      if (snap.exists) {
+        isRemote = true;
+        loadFormData(snap.data());
+        updatePreview();
+        isRemote = false;
+        syncUI("ok");
+      } else {
+        saveNow();
+      }
+    },
+    function() {
+      syncUI("err");
+    }
+  );
+}
+
+/* ════════════════════════════════
+   A4 SCALING
+   ════════════════════════════════ */
+function fitPreview() {
+  var s = $("scaler");
+  var w = s.parentElement;
+  var inv = $("invoiceEl");
+
+  s.style.transform = "none";
+  s.style.width = "auto";
+  s.style.height = "auto";
+
+  var available = w.clientWidth;
+  var full = inv.offsetWidth;
+
+  if (available < full) {
+    var scale = available / full;
+    s.style.transform = "scale(" + scale + ")";
+    s.style.width = full + "px";
+    s.style.height = (inv.offsetHeight * scale) + "px";
+  }
+}
+
+/* ════════════════════════════════
+   PRINT / NEW
+   ════════════════════════════════ */
+function printPDF() {
+  updatePreview();
+  document.title = ($("fInv").value || "invoice").replace(/[^a-z0-9\-_]/gi, "_");
+  setTimeout(function() { window.print(); }, 200);
+}
+
+function newInvoice() {
+  if (!confirm("Start a new invoice? A new link will be created.")) return;
+  var id = "inv_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  location.href = location.pathname + "?id=" + id;
+}
+
+/* ════════════════════════════════
+   INIT
+   ════════════════════════════════ */
+function init() {
+  loadTheme();
+
+  $("fDate").value = new Date().toISOString().slice(0, 10);
+  $("fInv").value = makeInvNo();
+
+  addRow("parts");
+  addRow("labor");
+
+  // Bind all static inputs
+  FIELDS.forEach(function(id) {
+    $(id).addEventListener("input", onChange);
+  });
+
+  updatePreview();
+  fitPreview();
+
+  window.addEventListener("resize", fitPreview);
+  setTimeout(fitPreview, 400);
+
+  // Watch for content changes
+  new MutationObserver(fitPreview).observe($("invoiceEl"), {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  // Start Firebase sync
+  startSync();
+}
+
+init();
+</script>
+
+</body>
+</html>
