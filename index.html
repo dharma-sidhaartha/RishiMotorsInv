@@ -193,7 +193,7 @@ textarea{min-height:70px;resize:vertical}
   <h1>Auto Invoice</h1>
   <div class="buttons">
     <button onclick="copyLink()">📋 Copy Link</button>
-    <button onclick="newInvoice()">✨ New</button>
+    <button onclick="clearAll()">Clear All</button>
     <button class="primary" onclick="window.print()">📄 PDF</button>
   </div>
 </div>
@@ -212,19 +212,19 @@ textarea{min-height:70px;resize:vertical}
       <div class="grid2">
         <div class="field">
           <label>Customer Name</label>
-          <input id="fName" placeholder="Customer name">
+          <input id="fName" placeholder="">
         </div>
         <div class="field">
           <label>Phone</label>
-          <input id="fPhone" placeholder="98765 43210">
+          <input id="fPhone" placeholder="">
         </div>
         <div class="field">
           <label>Car Model</label>
-          <input id="fCar" placeholder="Maruti Swift">
+          <input id="fCar" placeholder="">
         </div>
         <div class="field">
           <label>Kilometers</label>
-          <input id="fKm" placeholder="45,200 km">
+          <input id="fKm" placeholder="">
         </div>
         <div class="field">
           <label>Invoice Date</label>
@@ -240,12 +240,12 @@ textarea{min-height:70px;resize:vertical}
       <div id="partsList"></div>
       <button class="addbtn" onclick="addRow('parts')">+ Add Part</button>
 
-      <div class="sec-title">Labor & Other</div>
+      <div class="sec-title">Labor Charges & Other</div>
       <div id="laborList"></div>
       <button class="addbtn" onclick="addRow('labor')">+ Add Labor</button>
 
       <div class="sec-title">Notes</div>
-      <textarea id="fNotes" placeholder="Thank you for your business."></textarea>
+      <textarea id="fNotes" placeholder="Thank you, Visit Again."></textarea>
 
       <div class="eactions">
         <button onclick="clearAll()">Clear All</button>
@@ -340,7 +340,7 @@ const db = firebase.firestore();
    COMPANY DETAILS — EDIT HERE
    ════════════════════════════════ */
 const CO = {
-  name: "RISHI MOTORS",
+   name: "RISHI MOTORS",
   details: "Plot No.108, HIG Phase 15,Kphb Colony\nKukatpally, Hyderabad\n+91 8801073595",
   note: "Thank you, Visit Again."
 };
