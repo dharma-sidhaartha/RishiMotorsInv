@@ -12,7 +12,6 @@
 
 <style>
 :root {
-  /* Fixed Theme Colours */
   --bg: #f5f0e8;
   --panel: #ffffff;
   --text: #1a1410;
@@ -22,22 +21,12 @@
   --accent: #b8913a;
   --gold: #d4af5a;
   --input-bg: #fdfbf7;
-
-  /* Invoice Colours */
-  --company-name-color: #991C00;
-  --company-details-color: #0000D1;
+  --company-name-color: #D13819;
+  --company-details-color: #1280E0;
   --invoice-title-color: #1a1410;
   --invoice-main-text: #1a1a1a;
   --invoice-muted-text: #777777;
-
-  --top-line: linear-gradient(
-    90deg,
-    #7a5c1f,
-    #b8913a,
-    #d4c48a,
-    #b8913a,
-    #7a5c1f
-  );
+  --top-line: linear-gradient(90deg,#7a5c1f,#b8913a,#d4c48a,#b8913a,#7a5c1f);
 }
 
 * {
@@ -53,22 +42,58 @@ html {
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  background:
-    radial-gradient(circle at 15% 10%, rgba(184,145,58,0.08), transparent 35%),
-    radial-gradient(circle at 90% 90%, rgba(184,145,58,0.06), transparent 35%),
-    repeating-linear-gradient(
-      135deg,
-      transparent,
-      transparent 45px,
-      rgba(184,145,58,0.018) 45px,
-      rgba(184,145,58,0.018) 46px
-    ),
-    var(--bg);
+  background-color: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* Sync Badge */
+/* Background Icons */
+body::before {
+  content: "";
+  position: fixed;
+  top: 10%;
+  right: 5%;
+  width: 280px;
+  height: 280px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23b8913a' d='M352 320c88.4 0 160-71.6 160-160c0-15.3-2.2-30.1-6.2-44.2c-3.1-10.8-16.4-13.2-24.3-5.3l-76.8 76.8c-3 3-7.1 4.7-11.3 4.7H336c-8.8 0-16-7.2-16-16V118.6c0-4.2 1.7-8.3 4.7-11.3l76.8-76.8c7.9-7.9 5.4-21.2-5.3-24.3C382.1 2.2 367.3 0 352 0C263.6 0 192 71.6 192 160c0 19.1 3.4 37.5 9.5 54.5L19.9 396.1C7.2 408.8 0 426.1 0 444.1C0 481.6 30.4 512 67.9 512c18 0 35.3-7.2 48-19.9L297.5 310.5c17 6.2 35.4 9.5 54.5 9.5zM80 408a24 24 0 1 1 0 48 24 24 0 1 1 0-48z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: 8%;
+  left: 3%;
+  width: 240px;
+  height: 240px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23b8913a' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V400v48c0 17.7-14.3 32-32 32H448c-17.7 0-32-14.3-32-32V400H96v48c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V400 256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm288 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.07;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gear-bg {
+  position: fixed;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23b8913a' d='M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gear-1 { top: 45%; left: 8%; width: 100px; height: 100px; }
+.gear-2 { top: 65%; right: 10%; width: 130px; height: 130px; }
+.gear-3 { bottom: 25%; right: 35%; width: 90px; height: 90px; }
+
 .sync-badge {
   position: fixed;
   top: 74px;
@@ -86,19 +111,10 @@ body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 }
 
-.sync-badge.ok {
-  background: #2d6a4f;
-}
+.sync-badge.ok { background: #2d6a4f; }
+.sync-badge.saving { background: #b8913a; }
+.sync-badge.error { background: #c0392b; }
 
-.sync-badge.saving {
-  background: #b8913a;
-}
-
-.sync-badge.error {
-  background: #c0392b;
-}
-
-/* Topbar */
 .topbar {
   position: sticky;
   top: 0;
@@ -107,7 +123,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.95);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
@@ -183,7 +199,6 @@ button.primary:hover {
   opacity: 0.9;
 }
 
-/* Layout */
 .wrap {
   display: grid;
   grid-template-columns: 400px 1fr;
@@ -192,9 +207,10 @@ button.primary:hover {
   max-width: 1480px;
   margin: auto;
   align-items: start;
+  position: relative;
+  z-index: 1;
 }
 
-/* Editor */
 .editor {
   position: sticky;
   top: 86px;
@@ -333,7 +349,13 @@ textarea {
   background: rgba(184,145,58,0.06);
 }
 
-/* Preview */
+.eactions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 .prevcol {
   min-width: 0;
 }
@@ -360,7 +382,6 @@ textarea {
   transform-origin: top center;
 }
 
-/* Invoice A4 */
 .invoice {
   width: 210mm;
   min-height: 297mm;
@@ -450,7 +471,7 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--accent);
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .inv-card .val {
@@ -469,6 +490,12 @@ textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.vehicle-num {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #edeae4;
 }
 
 .inv-sec {
@@ -535,15 +562,10 @@ textarea {
   border-top: 2px solid #1a1a1a;
   margin-top: 8px;
   padding-top: 10px;
-  font-family: "Playfair Display", serif;
+  font-family: "Times New Roman", serif;
   font-size: 16pt;
   font-weight: 700;
   color: var(--invoice-main-text);
-}
-
-#pGrand {
-  font-family: "Playfair Display", serif;
-  font-weight: 700;
 }
 
 .inv-footer {
@@ -556,115 +578,44 @@ textarea {
   font-style: italic;
 }
 
-/* Mobile */
 @media(max-width: 1100px) {
-  .wrap {
-    grid-template-columns: 1fr;
-  }
-
-  .editor {
-    position: relative;
-    top: 0;
-  }
+  .wrap { grid-template-columns: 1fr; }
+  .editor { position: relative; top: 0; }
 }
 
 @media(max-width: 680px) {
-  .topbar {
-    padding: 12px 16px;
-  }
-
-  .wrap {
-    padding: 16px;
-    gap: 18px;
-  }
-
-  .grid2 {
-    grid-template-columns: 1fr;
-  }
-
-  .irow {
-    grid-template-columns: 1fr 60px 82px 32px;
-  }
-
-  .inv-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .vgrid {
-    grid-template-columns: 1fr;
-  }
-
-  .inv-head {
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .inv-right {
-    text-align: left;
-  }
-
-  .invoice {
-    padding: 20px;
-  }
-
-  .buttons {
-    width: 100%;
-  }
-
-  .buttons button {
-    flex: 1;
-  }
+  .topbar { padding: 12px 16px; }
+  .wrap { padding: 16px; gap: 18px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .irow { grid-template-columns: 1fr 60px 82px 32px; }
+  .inv-cards { grid-template-columns: 1fr; }
+  .vgrid { grid-template-columns: 1fr; }
+  .inv-head { flex-direction: column; gap: 14px; }
+  .inv-right { text-align: left; }
+  .invoice { padding: 20px; }
+  .buttons { width: 100%; }
+  .buttons button { flex: 1; }
 }
 
-/* Print */
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 0;
-  }
-
-  body {
-    background: white !important;
-    padding: 0;
-    margin: 0;
-  }
-
-  .no-print,
-  .topbar,
-  .editor,
-  .sync-badge,
-  .prevlabel {
-    display: none !important;
-  }
-
-  .wrap {
-    display: block;
-    padding: 0;
-    max-width: none;
-  }
-
-  .prevframe {
-    overflow: visible;
-  }
-
-  .prevscale {
-    transform: none !important;
-    width: auto !important;
-    height: auto !important;
-  }
-
-  .invoice {
-    width: 100%;
-    min-height: auto;
-    box-shadow: none;
-    border-radius: 0;
-    padding: 14mm;
-  }
+  @page { size: A4 portrait; margin: 0; }
+  body { background: white !important; padding: 0; margin: 0; }
+  body::before, body::after, .gear-bg { display: none !important; }
+  .no-print, .topbar, .editor, .sync-badge, .prevlabel { display: none !important; }
+  .wrap { display: block; padding: 0; max-width: none; }
+  .prevframe { overflow: visible; }
+  .prevscale { transform: none !important; width: auto !important; height: auto !important; }
+  .invoice { width: 100%; min-height: auto; box-shadow: none; border-radius: 0; padding: 14mm; }
 }
 </style>
 </head>
 
 <body>
+
+<!-- Background Gears -->
+<div class="gear-bg gear-1"></div>
+<div class="gear-bg gear-2"></div>
+<div class="gear-bg gear-3"></div>
 
 <div class="sync-badge" id="syncBadge">
   <span id="syncDot">●</span>
@@ -681,18 +632,18 @@ textarea {
   </div>
 
   <div class="buttons">
-    <button type="button" onclick="copyLink()">📋 Copy Share Link</button>
+    <button type="button" onclick="copyLink()">📋 Copy Link</button>
+    <button type="button" onclick="clearForm()">🗑️ Clear</button>
     <button type="button" class="primary" onclick="printPDF()">📄 Save PDF</button>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- Editor -->
   <aside class="editor no-print">
     <div class="editor-head">
       <h2>Invoice Editor</h2>
-      <span id="linkDisplay">Loading link...</span>
+      <span id="linkDisplay">Loading...</span>
     </div>
 
     <div class="editor-body">
@@ -702,22 +653,27 @@ textarea {
       <div class="grid2">
         <div class="field">
           <label>Customer Name</label>
-          <input id="fName" placeholder="Customer name" autocomplete="off">
+          <input id="fName" placeholder="" autocomplete="off">
         </div>
 
         <div class="field">
           <label>Phone</label>
-          <input id="fPhone" placeholder="98765 43210" autocomplete="off">
+          <input id="fPhone" placeholder="" autocomplete="off">
         </div>
 
         <div class="field">
           <label>Car Model</label>
-          <input id="fCar" placeholder="Maruti Swift" autocomplete="off">
+          <input id="fCar" placeholder="" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label>Vehicle Number</label>
+          <input id="fVehicleNo" placeholder="" autocomplete="off" style="text-transform:uppercase">
         </div>
 
         <div class="field">
           <label>Kilometers</label>
-          <input id="fKm" placeholder="45,200 km" autocomplete="off">
+          <input id="fKm" placeholder="" autocomplete="off">
         </div>
 
         <div class="field">
@@ -735,17 +691,21 @@ textarea {
       <div id="partsList"></div>
       <button type="button" class="addbtn" onclick="addPartRow()">+ Add Part</button>
 
-      <div class="sec-title">Labor & Other Charges</div>
+      <div class="sec-title">Labor & Other</div>
       <div id="laborList"></div>
       <button type="button" class="addbtn" onclick="addLaborRow()">+ Add Labor</button>
 
       <div class="sec-title">Notes</div>
       <textarea id="fNotes" placeholder="Thank you for your business." autocomplete="off"></textarea>
 
+      <div class="eactions">
+        <button type="button" onclick="clearForm()">Clear All</button>
+        <button type="button" class="primary" onclick="printPDF()">Print PDF</button>
+      </div>
+
     </div>
   </aside>
 
-  <!-- Preview -->
   <main class="prevcol">
     <div class="prevlabel no-print">
       <span>A4 Live Preview</span>
@@ -778,12 +738,17 @@ textarea {
 
             <div class="inv-card">
               <div class="lbl">Vehicle</div>
+              
+              <div class="vehicle-num">
+                <div class="sub">Vehicle No</div>
+                <div class="val" id="pVehicleNo" style="font-weight:700;letter-spacing:1px">—</div>
+              </div>
+              
               <div class="vgrid">
                 <div>
                   <div class="sub">Model</div>
                   <div class="val" id="pCar">—</div>
                 </div>
-
                 <div>
                   <div class="sub">Odometer</div>
                   <div class="val" id="pKm">—</div>
@@ -845,43 +810,32 @@ textarea {
 </div>
 
 <script>
-/* =====================================================
-   FIREBASE CONFIG — REPLACE THIS WITH YOUR OWN CONFIG
-===================================================== */
 const firebaseConfig = {
- apiKey: "AIzaSyCH5lWduhcIp4OJZv5ROx56nBnbydoqvnE",
-  authDomain: "rishimotors-86908.firebaseapp.com",
-  projectId: "rishimotors-86908",
-  storageBucket: "rishimotors-86908.firebasestorage.app",
-  messagingSenderId: "946307912850",
-  appId: "1:946307912850:web:3f8b293e4ffb850a25024b"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.firebasestorage.app",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+db.enablePersistence({ synchronizeTabs: true }).catch(function() {});
 
-db.enablePersistence({ synchronizeTabs: true }).catch(function() {
-  // Offline persistence may fail in some browsers/tabs. App still works online.
-});
-
-/* =====================================================
-   COMPANY DETAILS — EDIT HERE
-===================================================== */
 const CO = {
-  name: "PREMIER AUTO CARE",
-  details: "Shop No. 12, Main Market Road\nNew Delhi — 110001\n+91 98765 43210\ninfo@premierautocare.in",
-  note: "Thank you for your business. Goods once sold will not be taken back."
+  name: "RISHI MOTORS",
+  details: "Plot No.108, HIG Phase 15,Kphb Colony\nKukatpally, Hyderabad\n+91 8801073595",
+  note: "Thank you, Please Visit Again."
 };
 
-/* =====================================================
-   GLOBALS
-===================================================== */
 const $ = id => document.getElementById(id);
 
 const FIELDS = [
   "fName",
   "fPhone",
   "fCar",
+  "fVehicleNo",
   "fKm",
   "fDate",
   "fInv",
@@ -889,7 +843,6 @@ const FIELDS = [
 ];
 
 const CUR = "₹";
-
 const CLIENT_ID = "client_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 let docRef = null;
@@ -898,13 +851,9 @@ let isRemote = false;
 let unsubscribe = null;
 let hasLoadedOnce = false;
 
-/* =====================================================
-   SYNC UI
-===================================================== */
 function setSync(state, msg) {
   const badge = $("syncBadge");
   badge.className = "sync-badge " + state;
-
   if (state === "ok") {
     $("syncDot").textContent = "✓";
     $("syncMsg").textContent = msg || "Synced";
@@ -917,39 +866,26 @@ function setSync(state, msg) {
   }
 }
 
-/* =====================================================
-   INVOICE ID / SHARE LINK
-===================================================== */
 function getInvoiceID() {
   const params = new URLSearchParams(window.location.search);
   let id = params.get("id");
-
   if (id) return id;
-
   id = "inv_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
   params.set("id", id);
-
   window.history.replaceState({}, "", window.location.pathname + "?" + params.toString());
-
   return id;
 }
 
 function copyLink() {
   const url = window.location.href;
-
   navigator.clipboard.writeText(url).then(function() {
     setSync("ok", "Link copied!");
-    setTimeout(function() {
-      setSync("ok");
-    }, 1800);
+    setTimeout(function() { setSync("ok"); }, 1800);
   }).catch(function() {
     prompt("Copy this link:", url);
   });
 }
 
-/* =====================================================
-   FORMATTERS
-===================================================== */
 function money(value) {
   return CUR + Number(value || 0).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
@@ -959,17 +895,13 @@ function money(value) {
 
 function fmtDate(value) {
   if (!value) return "—";
-
   return new Date(value).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
+    day: "2-digit", month: "short", year: "numeric"
   });
 }
 
 function makeInvNo() {
   const d = new Date();
-
   return "INV-" +
     d.getFullYear() +
     String(d.getMonth() + 1).padStart(2, "0") +
@@ -979,9 +911,6 @@ function makeInvNo() {
     String(d.getMinutes()).padStart(2, "0");
 }
 
-/* =====================================================
-   ITEM ROWS
-===================================================== */
 function addPartRow() {
   addRow("parts");
   onChange();
@@ -1058,15 +987,10 @@ function readRows(listId) {
   });
 }
 
-/* =====================================================
-   CALCULATIONS
-===================================================== */
 function calcTable(listId, tbodyId) {
   const rows = document.querySelectorAll("#" + listId + " .irow");
   const tbody = $(tbodyId);
-
   tbody.innerHTML = "";
-
   let total = 0;
   let hasItems = false;
 
@@ -1078,18 +1002,15 @@ function calcTable(listId, tbodyId) {
     if (!desc && rate === 0) return;
 
     hasItems = true;
-
     const amount = qty * rate;
     total += amount;
 
     const tr = document.createElement("tr");
-
     tr.innerHTML =
       "<td>" + (desc || "—") + "</td>" +
       "<td>" + qty + "</td>" +
       "<td>" + money(rate) + "</td>" +
       "<td>" + money(amount) + "</td>";
-
     tbody.appendChild(tr);
   });
 
@@ -1101,17 +1022,18 @@ function calcTable(listId, tbodyId) {
   return total;
 }
 
-/* =====================================================
-   UPDATE PREVIEW
-===================================================== */
 function updatePreview() {
   $("coName").textContent = CO.name;
   $("coDetails").textContent = CO.details;
 
   $("pName").textContent = $("fName").value || "—";
   $("pPhone").textContent = $("fPhone").value || "—";
+  $("pVehicleNo").textContent = ($("fVehicleNo").value || "—").toUpperCase();
   $("pCar").textContent = $("fCar").value || "—";
-  $("pKm").textContent = $("fKm").value || "—";
+
+  const kmVal = $("fKm").value.trim();
+  $("pKm").textContent = kmVal ? kmVal + " km" : "—";
+
   $("pInv").textContent = $("fInv").value || "—";
   $("pDate").textContent = fmtDate($("fDate").value);
 
@@ -1127,34 +1049,23 @@ function updatePreview() {
   fitPreview();
 }
 
-/* =====================================================
-   FIREBASE SAVE / LOAD
-===================================================== */
 function getFormData() {
   const data = {};
-
   FIELDS.forEach(function(id) {
     data[id] = $(id).value;
   });
-
   data.parts = readRows("partsList");
   data.labor = readRows("laborList");
-
   data._updatedBy = CLIENT_ID;
   data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-
   return data;
 }
 
 function saveToFirebase() {
   if (!docRef || isRemote) return;
-
   setSync("saving");
-
   docRef.set(getFormData(), { merge: true })
-    .then(function() {
-      setSync("ok");
-    })
+    .then(function() { setSync("ok"); })
     .catch(function(err) {
       console.error("Save error:", err);
       setSync("error", "Save failed");
@@ -1182,38 +1093,26 @@ function loadFormData(data) {
   const labor = data.labor || [];
 
   if (parts.length) {
-    parts.forEach(function(item) {
-      addRow("parts", item);
-    });
+    parts.forEach(function(item) { addRow("parts", item); });
   } else {
     addRow("parts");
   }
 
   if (labor.length) {
-    labor.forEach(function(item) {
-      addRow("labor", item);
-    });
+    labor.forEach(function(item) { addRow("labor", item); });
   } else {
     addRow("labor");
   }
 
   updatePreview();
-
   isRemote = false;
 }
 
-/* =====================================================
-   REALTIME SYNC
-===================================================== */
 function startFirestoreSync() {
   const id = getInvoiceID();
-
   $("linkDisplay").textContent = "ID: " + id;
-
   docRef = db.collection("sharedInvoices").doc(id);
-
   if (unsubscribe) unsubscribe();
-
   setSync("saving", "Loading...");
 
   unsubscribe = docRef.onSnapshot(function(snap) {
@@ -1226,14 +1125,12 @@ function startFirestoreSync() {
     }
 
     const data = snap.data();
-
     if (data._updatedBy === CLIENT_ID && hasLoadedOnce) {
       setSync("ok");
       return;
     }
 
     hasLoadedOnce = true;
-
     loadFormData(data);
     setSync("ok");
 
@@ -1243,24 +1140,16 @@ function startFirestoreSync() {
   });
 }
 
-/* =====================================================
-   CHANGE HANDLER
-===================================================== */
 function onChange() {
   if (isRemote) return;
-
   updatePreview();
   debounceSave();
 }
 
-/* =====================================================
-   A4 PREVIEW SCALING
-===================================================== */
 function fitPreview() {
   const scaler = $("scaler");
   const frame = scaler.parentElement;
   const invoice = $("invoiceEl");
-
   scaler.style.transform = "none";
   scaler.style.width = "auto";
   scaler.style.height = "auto";
@@ -1276,22 +1165,31 @@ function fitPreview() {
   }
 }
 
-/* =====================================================
-   PRINT PDF
-===================================================== */
 function printPDF() {
   updatePreview();
-
   document.title = ($("fInv").value || "invoice").replace(/[^a-z0-9\-_]/gi, "_");
-
-  setTimeout(function() {
-    window.print();
-  }, 200);
+  setTimeout(function() { window.print(); }, 200);
 }
 
-/* =====================================================
-   INIT
-===================================================== */
+function clearForm() {
+  if (!confirm("Clear all invoice data? This will reset the current invoice.")) return;
+
+  FIELDS.forEach(function(id) {
+    $(id).value = "";
+  });
+
+  $("fDate").value = new Date().toISOString().slice(0, 10);
+  $("fInv").value = makeInvNo();
+
+  $("partsList").innerHTML = "";
+  $("laborList").innerHTML = "";
+  addRow("parts");
+  addRow("labor");
+
+  updatePreview();
+  saveToFirebase();
+}
+
 function init() {
   $("fDate").value = new Date().toISOString().slice(0, 10);
   $("fInv").value = makeInvNo();
@@ -1308,7 +1206,6 @@ function init() {
   fitPreview();
 
   window.addEventListener("resize", fitPreview);
-
   setTimeout(fitPreview, 400);
 
   new MutationObserver(fitPreview).observe($("invoiceEl"), {
